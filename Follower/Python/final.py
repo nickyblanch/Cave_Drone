@@ -46,7 +46,8 @@ def main():
     arm(the_connection)
 
     # Take off
-    # takeoff(the_connection, 4)
+    takeoff(the_connection, 0.1)
+    request_local_NED(the_connection)
 
     # Enter offboard mode
     # TODO - the command to enter offboard mode does not currently work.
@@ -55,24 +56,33 @@ def main():
     
     # offboard(the_connection)
 
-
     # Loop
     while 1:
 
         # Note: In order for PX4 to remain in offboard mode, it needs to receive target commands
         # at a rate of at least 2 Hz.
-        
-        # Update target position
-        x = 0.5
-        y = 0.5
-        z = -0.5
-        update_target_ned(the_connection, x, y, z)
 
-        # Print MAVLINK messages
-        # try:
-        #     print(the_connection.recv_match().to_dict())
-        # except:
-        #     pass
+        # Update current position
+        request_local_NED(the_connection)
+
+
+        try:
+            # print(the_connection.recv_match(type='LOCAL_POSITION_NED', blocking=True).to_dict())
+            msg = the_connection.recv_match(type='LOCAL_POSITION_NED', blocking=False).to_dict()
+            x = msg["x"]
+            y = msg["y"]
+            z = msg["x"]
+            msg_success = True
+        except:
+            msg_success = False
+            print("Problem!")
+
+        # Update target position
+        if msg_success:
+            x_target = x
+            y_target = y
+            z_target = z
+            update_target_ned(the_connection, x_target, y_target, z_target)
         
         time.sleep(0.1)
 
@@ -120,8 +130,8 @@ def takeoff(the_connection, alt):
     the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, alt)
 
     # Wait for acknowledge
-    msg = the_connection.recv_match(type='COMMAND<ACK', blocking=True)
-    print(msg)
+    # msg = the_connection.recv_match(type='COMMAND<ACK', blocking=True)
+    # print(msg)
 
 
 def update_target_ned(the_connection, x_val, y_val, z_val):
@@ -167,6 +177,23 @@ def update_target_ned(the_connection, x_val, y_val, z_val):
                 mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_RATE_IGNORE), x=float(x_val), y=float(y_val), z=float(z_val), vx=0, vy=0, vz=0, afx=0, afy=0, afz=0, yaw=0, yaw_rate=0)
 
     # Verify that target is set
+    request_target_pos_NED(the_connection)
+
+def request_local_NED(the_connection):
+
+    ################################################
+    # the_connection: mavlink connection [input]
+    ################################################
+
+    the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, 0, mavutil.mavlink.MAVLINK_MSG_ID_LOCAL_POSITION_NED, 1e6/20, 0, 0, 0, 0, 0)
+
+
+def request_target_pos_NED(the_connection):
+
+    ################################################
+    # the_connection: mavlink connection [input]
+    ################################################
+
     the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, 0, mavutil.mavlink.MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED, 1e6/20, 0, 0, 0, 0, 0)
 
 
