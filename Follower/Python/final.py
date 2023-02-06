@@ -3,7 +3,7 @@
 # Created for Dr. Shkarayev at the University of Arizona
 # Date: 1/10/23
 # Purpose: Automatic control for follower drone in cave drone project.
-# Dependencies: pymavlink, time
+# Dependencies: pymavlink, time, threading
 
 # Thank you to ardusub.com Intelligent Quads on YouTube for pymavlink references.
 
@@ -26,12 +26,38 @@
 # to the voxl's WiFi AP. For this project, the AP is named 'DRONE' and has a
 # password of '123456789'.
 
+# When calibarting sensors, the closest board orientation is: YAW 90 ROLL 90 PITCH 180
+
+
 ####################################################################################
+
 
 from pymavlink import mavutil
 import time
+import threading
+
 
 ####################################################################################
+
+
+FLIGHT_MODE = 1         # 0 = test mode: fly to (TEST_MODE_X, TEST_MODE_Y, TEST_MODE_Z)
+                        # 1 = manual mode: fly to coordinates provided by user
+                        # 2 = autonomous mode: fly to hard-coded coordinates
+
+TEST_MODE_X = 0         # target x coordinate in test mode
+TEST_MODE_Y = 0         # target y coordinate in test mode
+TEST_MODE_Z = -1        # targer z coordinate in test mode
+
+SEND_TELEMETRY = 1       # 1 = send telemtry
+                        # 0 = don't send telemtry
+
+TARGET_X = 0            # target x coordinate
+TARGET_Y = 0            # target y coordinate
+TARGET_Z = -1           # target z coordinate
+
+
+####################################################################################
+
 
 def main():
 
@@ -43,11 +69,16 @@ def main():
     the_connection = setup()
 
     # Arm the system
-    arm(the_connection)
+    # arm(the_connection)
 
     # Take off
-    takeoff(the_connection, 0.1)
+    # takeoff(the_connection, 0.75)
+
+    # Request local coordinates
     request_local_NED(the_connection)
+
+    # Request target local coordinates
+    request_target_pos_NED(the_connection)
 
     # Enter offboard mode
     # TODO - the command to enter offboard mode does not currently work.
@@ -56,37 +87,57 @@ def main():
     
     # offboard(the_connection)
 
+    # Initialize X, Y, Z
+    msg = the_connection.recv_match(type='LOCAL_POSITION_NED', blocking=True).to_dict()
+    x = msg["x"]
+    y = msg["y"]
+    z = msg["z"]
+
+    # Begin our telemtry thread
+    t1 = threading.Thread(target=telemetry_loop_thread, args=(the_connection,))
+    t1.start()
+
     # Loop
+    print("Entering loop")
     while 1:
 
         # Note: In order for PX4 to remain in offboard mode, it needs to receive target commands
         # at a rate of at least 2 Hz.
+        SEND_TELEMETRY = 1
 
         # Update current position
-        request_local_NED(the_connection)
-
-
         try:
-            # print(the_connection.recv_match(type='LOCAL_POSITION_NED', blocking=True).to_dict())
-            msg = the_connection.recv_match(type='LOCAL_POSITION_NED', blocking=False).to_dict()
-            x = msg["x"]
-            y = msg["y"]
-            z = msg["x"]
+            msg = the_connection.messages['LOCAL_POSITION_NED']
+            x = msg.x
+            y = msg.y
+            z = msg.z
             msg_success = True
         except:
             msg_success = False
-            print("Problem!")
+            print("Problem receiving LOCAL_POSITION_NED Mav message.")
 
         # Update target position
-        if msg_success:
-            x_target = x
-            y_target = y
-            z_target = z
-            update_target_ned(the_connection, x_target, y_target, z_target)
-        
-        time.sleep(0.1)
+        if (FLIGHT_MODE == 0):
+            # Test mode
+            TARGET_X = TEST_MODE_X
+            TARGET_Y = TEST_MODE_Y
+            TARGET_Z = TEST_MODE_Z
+        elif (FLIGHT_MODE == 1):
+            # Manual mode
+            try:
+                TARGET_X, TARGET_Y, TARGET_Z = input("Enter target x y z: ").split()
+            except:
+                print("Error reading input coordinates.")
+        elif (FLIGHT_MODE == 2):
+            # Autonomous mode
+            pass
+        else:
+            print("FLIGHT MODE NOT RECOGNIZED.")
+            return
+
 
 ####################################################################################
+
 
 def setup():
 
@@ -143,29 +194,10 @@ def update_target_ned(the_connection, x_val, y_val, z_val):
     # z_val: float, desired z target [input]
     ################################################
 
-    # Set our target
-    boot_time = 10
-    # the_connection.mav.set_position_target_local_ned_send(boot_time, the_connection.target_system, the_connection.target_component, 1,
-    # type_mask=(
-    #             # DON'T mavutil.mavlink.POSITION_TARGET_TYPEMASK_X_IGNORE |
-    #             # DON'T mavutil.mavlink.POSITION_TARGET_TYPEMASK_Y_IGNORE |
-    #             # DON'T mavutil.mavlink.POSITION_TARGET_TYPEMASK_Z_IGNORE |
-    #             mavutil.mavlink.POSITION_TARGET_TYPEMASK_VX_IGNORE |
-    #             mavutil.mavlink.POSITION_TARGET_TYPEMASK_VY_IGNORE |
-    #             mavutil.mavlink.POSITION_TARGET_TYPEMASK_VZ_IGNORE |
-    #             mavutil.mavlink.POSITION_TARGET_TYPEMASK_AX_IGNORE |
-    #             mavutil.mavlink.POSITION_TARGET_TYPEMASK_AY_IGNORE |
-    #             mavutil.mavlink.POSITION_TARGET_TYPEMASK_AZ_IGNORE |
-    #             # DON'T mavutil.mavlink.POSITION_TARGET_TYPEMASK_FORCE_SET |
-    #             mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_IGNORE |
-    #             mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_RATE_IGNORE), x=1, y=1, z=0.5, vx=0, vy=0, vz=0, afx=0, afy=0, afz=0, yaw=0, yaw_rate=0)
-
-    # type_mask=3576
-    # the_connection.mav.send(mavutil.mavlink.MAVLink_set_position_target_local_ned_message(10, the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_FRAME_LOCAL_NED, int(3576), float(x_val), float(y_val), float(z_val), 0, 0, 0, 0, 0, 0, 0, 0))
     the_connection.mav.set_position_target_local_ned_send(0, the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_FRAME_LOCAL_NED, type_mask=(
-                mavutil.mavlink.POSITION_TARGET_TYPEMASK_X_IGNORE |
-                mavutil.mavlink.POSITION_TARGET_TYPEMASK_Y_IGNORE |
-                # DON'T mavutil.mavlink.POSITION_TARGET_TYPEMASK_Z_IGNORE |
+                # mavutil.mavlink.POSITION_TARGET_TYPEMASK_X_IGNORE |
+                # mavutil.mavlink.POSITION_TARGET_TYPEMASK_Y_IGNORE |
+                # mavutil.mavlink.POSITION_TARGET_TYPEMASK_Z_IGNORE |
                 mavutil.mavlink.POSITION_TARGET_TYPEMASK_VX_IGNORE |
                 mavutil.mavlink.POSITION_TARGET_TYPEMASK_VY_IGNORE |
                 mavutil.mavlink.POSITION_TARGET_TYPEMASK_VZ_IGNORE |
@@ -176,8 +208,9 @@ def update_target_ned(the_connection, x_val, y_val, z_val):
                 mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_IGNORE |
                 mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_RATE_IGNORE), x=float(x_val), y=float(y_val), z=float(z_val), vx=0, vy=0, vz=0, afx=0, afy=0, afz=0, yaw=0, yaw_rate=0)
 
-    # Verify that target is set
-    request_target_pos_NED(the_connection)
+    if (FLIGHT_MODE != 1):
+        print("TARGET: [" + str(x_val) + ", " + str(y_val) + ", " + str(z_val) + "]")
+
 
 def request_local_NED(the_connection):
 
@@ -197,9 +230,22 @@ def request_target_pos_NED(the_connection):
     the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, 0, mavutil.mavlink.MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED, 1e6/20, 0, 0, 0, 0, 0)
 
 
+def telemetry_loop_thread(the_connection):
+
+    ################################################
+    # the_connection: mavlink connection [input]
+    ################################################
+
+    while SEND_TELEMETRY:
+        update_target_ned(the_connection, TARGET_X, TARGET_Y, TARGET_Z)
+
+    return 0
+
+    
 ####################################################################################
 # TODO
 ####################################################################################
+
 
 # UNUSED
 # def update_mode(the_connection, mode):
@@ -323,7 +369,6 @@ def land(the_connection):
 
 
 ####################################################################################
-# Main function call
-####################################################################################
 
-main()
+if __name__ == "__main__":
+    main()
