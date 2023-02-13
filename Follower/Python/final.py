@@ -40,15 +40,16 @@ import threading
 ####################################################################################
 
 
-FLIGHT_MODE = 1         # 0 = test mode: fly to (TEST_MODE_X, TEST_MODE_Y, TEST_MODE_Z)
+FLIGHT_MODE = 3         # 0 = test mode: fly to (TEST_MODE_X, TEST_MODE_Y, TEST_MODE_Z)
                         # 1 = manual mode: fly to coordinates provided by user
                         # 2 = autonomous mode: fly to hard-coded coordinates
+                        # 3 = demo: fly is a 2x2 meter square at an altitude of 1 meter.
 
-TEST_MODE_X = 0         # target x coordinate in test mode
-TEST_MODE_Y = 0         # target y coordinate in test mode
+TEST_MODE_X = 1         # target x coordinate in test mode
+TEST_MODE_Y = 1         # target y coordinate in test mode
 TEST_MODE_Z = -1        # targer z coordinate in test mode
 
-SEND_TELEMETRY = 1       # 1 = send telemtry
+SEND_TELEMETRY = 1      # 1 = send telemtry
                         # 0 = don't send telemtry
 
 TARGET_X = 0            # target x coordinate
@@ -65,14 +66,19 @@ def main():
     # [no inputs or outputs]
     ################################################
 
+    global TARGET_X
+    global TARGET_Y
+    global TARGET_Z
+    global SEND_TELEMETRY
+
     # Establish MAVLINK connection
     the_connection = setup()
 
     # Arm the system
-    # arm(the_connection)
+    arm(the_connection)
 
     # Take off
-    # takeoff(the_connection, 0.75)
+    takeoff(the_connection, 0.75)
 
     # Request local coordinates
     request_local_NED(the_connection)
@@ -128,9 +134,42 @@ def main():
                 TARGET_X, TARGET_Y, TARGET_Z = input("Enter target x y z: ").split()
             except:
                 print("Error reading input coordinates.")
+            finally:
+                print("Going to: " + str(TARGET_X) + ", " + str(TARGET_Y) + ", " + str(TARGET_Z))
         elif (FLIGHT_MODE == 2):
             # Autonomous mode
             pass
+        elif (FLIGHT_MODE == 3):
+
+            TARGET_X = 0
+            TARGET_Y = 0
+            TARGET_Z = -1
+            time.sleep(20)
+
+            TARGET_X = 2
+            TARGET_Y = 2
+            TARGET_Z = -1
+            time.sleep(8)
+
+            TARGET_X = -2
+            TARGET_Y = 2
+            TARGET_Z = -1
+            time.sleep(8)
+
+            TARGET_X = -2
+            TARGET_Y = -2
+            TARGET_Z = -1
+            time.sleep(8)
+
+            TARGET_X = 2
+            TARGET_Y = -2
+            TARGET_Z = -1
+            time.sleep(8)
+
+            TARGET_X = 0
+            TARGET_Y = 0
+            TARGET_Z = -1
+            time.sleep(8)
         else:
             print("FLIGHT MODE NOT RECOGNIZED.")
             return
@@ -236,6 +275,10 @@ def telemetry_loop_thread(the_connection):
     # the_connection: mavlink connection [input]
     ################################################
 
+    global TARGET_X
+    global TARGET_Y
+    global TARGET_Z
+
     while SEND_TELEMETRY:
         update_target_ned(the_connection, TARGET_X, TARGET_Y, TARGET_Z)
 
@@ -323,23 +366,25 @@ def offboard(the_connection):
     # mode: int, id of the desired px4 mode [input]
     ################################################
 
+    # master.mav.command_long_send( master.target_system, master.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0, 0, mode_id, 0, 0, 0, 0, 0)
+
     
-    the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0, 1, 0, 0, 0, 0, 0, 0)
+    the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0, 0, 0, 0, 0, 0, 0, 0)
 
-    while True:
-        # Wait for ACK command
-        # Would be good to add mechanism to avoid endlessly blocking
-        # if the autopilot sends a NACK or never receives the message
-        ack_msg = the_connection.recv_match(type='COMMAND_ACK', blocking=True)
-        ack_msg = ack_msg.to_dict()
+    # while True:
+    #     # Wait for ACK command
+    #     # Would be good to add mechanism to avoid endlessly blocking
+    #     # if the autopilot sends a NACK or never receives the message
+    #     ack_msg = the_connection.recv_match(type='COMMAND_ACK', blocking=True)
+    #     ack_msg = ack_msg.to_dict()
 
-        # Continue waiting if the acknowledged command is not `set_mode`
-        if ack_msg['command'] != mavutil.mavlink.MAV_CMD_DO_SET_MODE:
-            continue
+    #     # Continue waiting if the acknowledged command is not `set_mode`
+    #     if ack_msg['command'] != mavutil.mavlink.MAV_CMD_DO_SET_MODE:
+    #         continue
 
-        # Print the ACK result !
-        print(mavutil.mavlink.enums['MAV_RESULT'][ack_msg['result']].description)
-        break
+    #     # Print the ACK result !
+    #     print(mavutil.mavlink.enums['MAV_RESULT'][ack_msg['result']].description)
+    #     break
 
 
 def land(the_connection):
@@ -352,23 +397,36 @@ def land(the_connection):
     
     the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0, 1, 0, 0, 0, 0, 0, 0)
 
-    while True:
-        # Wait for ACK command
-        # Would be good to add mechanism to avoid endlessly blocking
-        # if the autopilot sends a NACK or never receives the message
-        ack_msg = the_connection.recv_match(type='COMMAND_ACK', blocking=True)
-        ack_msg = ack_msg.to_dict()
+    # while True:
+    #     # Wait for ACK command
+    #     # Would be good to add mechanism to avoid endlessly blocking
+    #     # if the autopilot sends a NACK or never receives the message
+    #     ack_msg = the_connection.recv_match(type='COMMAND_ACK', blocking=True)
+    #     ack_msg = ack_msg.to_dict()
 
-        # Continue waiting if the acknowledged command is not `set_mode`
-        if ack_msg['command'] != mavutil.mavlink.MAV_CMD_DO_SET_MODE:
-            continue
+    #     # Continue waiting if the acknowledged command is not `set_mode`
+    #     if ack_msg['command'] != mavutil.mavlink.MAV_CMD_DO_SET_MODE:
+    #         continue
 
-        # Print the ACK result !
-        print(mavutil.mavlink.enums['MAV_RESULT'][ack_msg['result']].description)
-        break
+    #     # Print the ACK result !
+    #     print(mavutil.mavlink.enums['MAV_RESULT'][ack_msg['result']].description)
+    #     break
 
 
 ####################################################################################
 
+def debug_test_offboard():
+    # Establish MAVLINK connection
+    the_connection = setup()
+
+    while 1:
+        offboard(the_connection)
+        time.sleep(1)
+
+
+####################################################################################
+
+
 if __name__ == "__main__":
-    main()
+    # main()
+    debug_test_offboard()
