@@ -369,7 +369,7 @@ def offboard(the_connection):
     # master.mav.command_long_send( master.target_system, master.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0, 0, mode_id, 0, 0, 0, 0, 0)
 
     
-    the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0, 0, 0, 0, 0, 0, 0, 0)
+    the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0, 0, 2, 0, 0, 0, 0, 0)
 
     # while True:
     #     # Wait for ACK command
