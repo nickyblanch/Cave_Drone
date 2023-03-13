@@ -52,9 +52,16 @@ TEST_MODE_Z = -1        # targer z coordinate in test mode
 SEND_TELEMETRY = 1      # 1 = send telemtry
                         # 0 = don't send telemtry
 
+LAND = 0                # 1 = landing
+                        # 0 = normal operation
+
 TARGET_X = 0            # target x coordinate
 TARGET_Y = 0            # target y coordinate
 TARGET_Z = -1           # target z coordinate
+
+CURRENT_X = 0           # current x coordinate
+CURRENT_Y = 0           # current y coordinate
+CURRENT_Z = 0           # current z coordinate
 
 
 ####################################################################################
@@ -69,6 +76,9 @@ def main():
     global TARGET_X
     global TARGET_Y
     global TARGET_Z
+    global CURRENT_X
+    global CURRENT_Y
+    global CURRENT_Z
     global SEND_TELEMETRY
 
     # Establish MAVLINK connection
@@ -102,6 +112,8 @@ def main():
     # Begin our telemtry thread
     t1 = threading.Thread(target=telemetry_loop_thread, args=(the_connection,))
     t1.start()
+    t2 = threading.Thread(target=telemetry_local_position_thread, args=(the_connection,))
+    t2.start()
 
     # Loop
     print("Entering loop")
@@ -114,9 +126,9 @@ def main():
         # Update current position
         try:
             msg = the_connection.messages['LOCAL_POSITION_NED']
-            x = msg.x
-            y = msg.y
-            z = msg.z
+            CURRENT_X = msg.x
+            CURRENT_Y = msg.y
+            CURRENT_Z = msg.z
             msg_success = True
         except:
             msg_success = False
@@ -146,30 +158,64 @@ def main():
             TARGET_Z = -1
             time.sleep(20)
 
-            TARGET_X = 2
-            TARGET_Y = 2
+            TARGET_X = 1
+            TARGET_Y = 1
             TARGET_Z = -1
             time.sleep(8)
+            # while( (x - TARGET_X) > .1 and (y - TARGET_Y) > 0.1 ):
+                # msg = the_connection.messages['LOCAL_POSITION_NED']
+                # x = msg.x
+                # y = msg.y
+                # z = msg.z
+            # land(the_connection)
+            # takeoff(the_connection, 0.75)
 
-            TARGET_X = -2
-            TARGET_Y = 2
+            TARGET_X = -1
+            TARGET_Y = 1
             TARGET_Z = -1
             time.sleep(8)
+            # while( (x - TARGET_X) > .1 and (y - TARGET_Y) > 0.1 ):
+                # msg = the_connection.messages['LOCAL_POSITION_NED']
+                # x = msg.x
+                # y = msg.y
+                # z = msg.z
+            # land(the_connection)
+            # takeoff(the_connection, 0.75)
 
-            TARGET_X = -2
-            TARGET_Y = -2
+            TARGET_X = -1
+            TARGET_Y = -1
             TARGET_Z = -1
             time.sleep(8)
+            # while( (x - TARGET_X) > .1 and (y - TARGET_Y) > 0.1 ):
+                # msg = the_connection.messages['LOCAL_POSITION_NED']
+                # x = msg.x
+                # y = msg.y
+                # z = msg.z
+            # land(the_connection)
+            # takeoff(the_connection, 0.75)
 
-            TARGET_X = 2
-            TARGET_Y = -2
+            TARGET_X = 1
+            TARGET_Y = -1
             TARGET_Z = -1
             time.sleep(8)
+            # while( (x - TARGET_X) > .1 and (y - TARGET_Y) > 0.1 ):
+                # msg = the_connection.messages['LOCAL_POSITION_NED']
+                # x = msg.x
+                # y = msg.y
+                # z = msg.z
+            # land(the_connection)
+            # takeoff(the_connection, 0.75)
 
             TARGET_X = 0
             TARGET_Y = 0
             TARGET_Z = -1
             time.sleep(8)
+            # while( (x - TARGET_X) > .1 and (y - TARGET_Y) > 0.1 ):
+                # msg = the_connection.messages['LOCAL_POSITION_NED']
+                # x = msg.x
+                # y = msg.y
+                # z = msg.z
+            # land(the_connection)
         else:
             print("FLIGHT MODE NOT RECOGNIZED.")
             return
@@ -218,6 +264,20 @@ def takeoff(the_connection, alt):
 
     # Takeoff command
     the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_NAV_TAKEOFF, 0, 0, 0, 0, 0, 0, 0, alt)
+
+    # Wait for acknowledge
+    # msg = the_connection.recv_match(type='COMMAND<ACK', blocking=True)
+    # print(msg)
+
+
+def land(the_connection):
+
+    ################################################
+    # the_connection: mavlink connection [input]
+    ################################################
+
+    # Takeoff command
+    the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_NAV_LAND, 0, 0, 0, 0, 0, 0, 0, 0)
 
     # Wait for acknowledge
     # msg = the_connection.recv_match(type='COMMAND<ACK', blocking=True)
@@ -284,9 +344,142 @@ def telemetry_loop_thread(the_connection):
 
     return 0
 
+
+def telemetry_local_position_thread(the_connection):
+
+     ################################################
+    # the_connection: mavlink connection [input]
+    ################################################
+
+    global CURRENT_X
+    global CURRENT_Y
+    global CURRENT_Z
+
+    while 1:
+        try:
+            msg = the_connection.messages['LOCAL_POSITION_NED']
+            CURRENT_X = msg.x
+            CURRENT_Y = msg.y
+            CURRENT_Z = msg.z
+        except:
+            print("Problem receiving LOCAL_POSITION_NED Mav message.")
+    
+
+
+
+def offboard(the_connection):
+
+    ################################################
+    # the_connection: mavlink connection [input]
+    # mode: int, id of the desired px4 mode [input]
+    ################################################
+
+    # master.mav.command_long_send( master.target_system, master.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0, 0, mode_id, 0, 0, 0, 0, 0)
+
+    
+    the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0, 209, 6, 0, 0, 0, 0, 0)
+
+    # while True:
+    #     # Wait for ACK command
+    #     # Would be good to add mechanism to avoid endlessly blocking
+    #     # if the autopilot sends a NACK or never receives the message
+    #     ack_msg = the_connection.recv_match(type='COMMAND_ACK', blocking=True)
+    #     ack_msg = ack_msg.to_dict()
+
+    #     # Continue waiting if the acknowledged command is not `set_mode`
+    #     if ack_msg['command'] != mavutil.mavlink.MAV_CMD_DO_SET_MODE:
+    #         continue
+
+    #     # Print the ACK result !
+    #     print(mavutil.mavlink.enums['MAV_RESULT'][ack_msg['result']].description)
+    #     break
+
+
+####################################################################################
+
+def debug_test_offboard():
+    # Establish MAVLINK connection
+    the_connection = setup()
+
+    status = input("Okay for enter offboard?")
+
+    if status != "n" and status != "N":
+        while 1:
+            offboard(the_connection)
+            time.sleep(1)
+
+
+def debug_test_land():
+   ################################################
+    # [no inputs or outputs]
+    ################################################
+
+    global TARGET_X
+    global TARGET_Y
+    global TARGET_Z
+    global SEND_TELEMETRY
+    global LAND
+    
+    SEND_TELEMETRY = 1
+    LAND = 0
+
+    # Establish MAVLINK connection
+    the_connection = setup()
+
+    # Arm the system
+    arm(the_connection)
+
+    # Take off
+    takeoff(the_connection, 0.75)
+
+    # Request local coordinates
+    request_local_NED(the_connection)
+
+    # Request target local coordinates
+    request_target_pos_NED(the_connection)
+
+    # Enter offboard mode
+    # TODO - the command to enter offboard mode does not currently work.
+    # More information on PX4 operating mode numbers are required.
+    # For now, offboard mode must be invoked manually from QGroundControl.
+    
+    # offboard(the_connection)
+
+    # Initialize X, Y, Z
+    msg = the_connection.recv_match(type='LOCAL_POSITION_NED', blocking=True).to_dict()
+    x = msg["x"]
+    y = msg["y"]
+    z = msg["z"]
+
+    # Begin our telemtry thread
+    t1 = threading.Thread(target=telemetry_loop_thread, args=(the_connection,))
+    t1.start()
+
+    # Set initial target
+    TARGET_X = 0
+    TARGET_Y = 0
+    TARGET_Z = -0.5
+
+    # Pause for 7 seconds
+    time.sleep(12)
+
+    while 1:
+        # Land
+        LAND = 1
+        time.sleep(1)
+        the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_NAV_LAND, 0, 0, 0, 0, 0, 0, 0, 0)
+       
+
+####################################################################################
+
+
+if __name__ == "__main__":
+    main()
+    # debug_test_land()
+
     
 ####################################################################################
-# TODO
+# UNUSED
 ####################################################################################
 
 
@@ -357,76 +550,3 @@ def telemetry_loop_thread(the_connection):
 #         # Print the ACK result !
 #         print(mavutil.mavlink.enums['MAV_RESULT'][ack_msg['result']].description)
 #         break
-
-
-def offboard(the_connection):
-
-    ################################################
-    # the_connection: mavlink connection [input]
-    # mode: int, id of the desired px4 mode [input]
-    ################################################
-
-    # master.mav.command_long_send( master.target_system, master.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0, 0, mode_id, 0, 0, 0, 0, 0)
-
-    
-    the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0, 0, 2, 0, 0, 0, 0, 0)
-
-    # while True:
-    #     # Wait for ACK command
-    #     # Would be good to add mechanism to avoid endlessly blocking
-    #     # if the autopilot sends a NACK or never receives the message
-    #     ack_msg = the_connection.recv_match(type='COMMAND_ACK', blocking=True)
-    #     ack_msg = ack_msg.to_dict()
-
-    #     # Continue waiting if the acknowledged command is not `set_mode`
-    #     if ack_msg['command'] != mavutil.mavlink.MAV_CMD_DO_SET_MODE:
-    #         continue
-
-    #     # Print the ACK result !
-    #     print(mavutil.mavlink.enums['MAV_RESULT'][ack_msg['result']].description)
-    #     break
-
-
-def land(the_connection):
-
-    ################################################
-    # the_connection: mavlink connection [input]
-    # mode: int, id of the desired px4 mode [input]
-    ################################################
-
-    
-    the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0, 1, 0, 0, 0, 0, 0, 0)
-
-    # while True:
-    #     # Wait for ACK command
-    #     # Would be good to add mechanism to avoid endlessly blocking
-    #     # if the autopilot sends a NACK or never receives the message
-    #     ack_msg = the_connection.recv_match(type='COMMAND_ACK', blocking=True)
-    #     ack_msg = ack_msg.to_dict()
-
-    #     # Continue waiting if the acknowledged command is not `set_mode`
-    #     if ack_msg['command'] != mavutil.mavlink.MAV_CMD_DO_SET_MODE:
-    #         continue
-
-    #     # Print the ACK result !
-    #     print(mavutil.mavlink.enums['MAV_RESULT'][ack_msg['result']].description)
-    #     break
-
-
-####################################################################################
-
-def debug_test_offboard():
-    # Establish MAVLINK connection
-    the_connection = setup()
-
-    while 1:
-        offboard(the_connection)
-        time.sleep(1)
-
-
-####################################################################################
-
-
-if __name__ == "__main__":
-    # main()
-    debug_test_offboard()
