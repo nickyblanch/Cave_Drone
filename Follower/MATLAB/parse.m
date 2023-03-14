@@ -6,16 +6,16 @@ clc;
 
 % Import telemetry data
 dialect = mavlinkdialect('common.xml');
-logimport = mavlinktlog('1_14_log.tlog',dialect); 
+logimport = mavlinktlog('3_13_log.tlog',dialect); 
 
 % Filter local position (NED) MAVLINK data
 % msgs = readmsg(logimport, 'MessageName', 'LOCAL_POSITION_NED', 'Time',[0 100]);
 
-msgs = readmsg(logimport, 'MessageName', 'LOCAL_POSITION_NED')
-% NED = msgs.Messages{1};
+msgs = readmsg(logimport, 'MessageName', 'LOCAL_POSITION_NED');
+NED = msgs.Messages{1};
 
 % Filter out zero-valued messages
-% NED = NED(NED.x ~= 0 & NED.y ~= 0 & NED.z ~= 0, :);
+NED = NED(NED.x ~= 0 & NED.y ~= 0 & NED.z ~= 0, :);
 
 %% Plotting
 
