@@ -15,6 +15,7 @@
 # messages. The following command should be used to start MAVProxy:
 
 # mavproxy --master=udp:192.168.8.60:14550 --out 127.0.0.1:14551 --out 127.0.0.1:14552
+# mavproxy --master=udp:192.168.1.60:14550 --out 127.0.0.1:14551 --out 127.0.0.1:14552 (SEEKER 1)
 
 # Then, a ground station (QGroundControl) can connect to UD port 14551 and this
 # pymavlink script can connect to UDP port 14552.
