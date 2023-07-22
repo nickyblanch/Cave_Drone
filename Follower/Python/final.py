@@ -17,6 +17,9 @@
 # mavproxy --master=udp:192.168.8.60:14550 --out 127.0.0.1:14551 --out 127.0.0.1:14552
 # mavproxy --master=udp:192.168.1.60:14550 --out 127.0.0.1:14551 --out 127.0.0.1:14552 (SEEKER 1)
 
+# mavproxy --master=udp:192.168.1.134:14550 --out 127.0.0.1:14551 --out 127.0.0.1:14552 (MULTI DRONE, SEEKER 1)
+# mavproxy --master=udp:192.168.1.124:14550 --out 127.0.0.1:14551 --out 127.0.0.1:14552 (MULTI DRONE, SEEKER 1)
+
 # Then, a ground station (QGroundControl) can connect to UD port 14551 and this
 # pymavlink script can connect to UDP port 14552.
 
@@ -29,6 +32,16 @@
 
 # When calibarting sensors, the closest board orientation is: YAW 90 ROLL 90 PITCH 180
 
+# NOTE: In QGroundcontrol, MAVLink forwarding must be enabled and the forwarding address
+# must be port 14552.
+
+####################################################################################
+# TODO
+
+# 1.) Decrease proportional gain for velocity PID
+# 2.) Disable auto-disarm on landing
+# 3.) Test course with landing at each corner
+# 4.) Increase takeoff alt to 3.28 feet (1 meter)
 
 ####################################################################################
 
@@ -88,21 +101,11 @@ def main():
     # Arm the system
     arm(the_connection)
 
-    # Take off
-    takeoff(the_connection, 0.75)
-
     # Request local coordinates
     request_local_NED(the_connection)
 
     # Request target local coordinates
     request_target_pos_NED(the_connection)
-
-    # Enter offboard mode
-    # TODO - the command to enter offboard mode does not currently work.
-    # More information on PX4 operating mode numbers are required.
-    # For now, offboard mode must be invoked manually from QGroundControl.
-    
-    # offboard(the_connection)
 
     # Initialize X, Y, Z
     msg = the_connection.recv_match(type='LOCAL_POSITION_NED', blocking=True).to_dict()
@@ -115,6 +118,9 @@ def main():
     t1.start()
     t2 = threading.Thread(target=telemetry_local_position_thread, args=(the_connection,))
     t2.start()
+
+    # Take off
+    takeoff_CUSTOM(the_connection, 1)
 
     # Loop
     print("Entering loop")
@@ -157,10 +163,12 @@ def main():
             TARGET_X = 0
             TARGET_Y = 0
             TARGET_Z = -1
-            time.sleep(20)
+            time.sleep(2)
+            offboard(the_connection)
+            time.sleep(8)
 
-            TARGET_X = 1
-            TARGET_Y = 1
+            TARGET_X = 2
+            TARGET_Y = 2
             TARGET_Z = -1
             time.sleep(8)
             # while( (x - TARGET_X) > .1 and (y - TARGET_Y) > 0.1 ):
@@ -168,11 +176,13 @@ def main():
                 # x = msg.x
                 # y = msg.y
                 # z = msg.z
-            # land(the_connection)
-            # takeoff(the_connection, 0.75)
+            land(the_connection)
+            time.sleep(5)
+            takeoff_CUSTOM_coordinates(the_connection, 2, 2, 1)
+            time.sleep(5)
 
-            TARGET_X = -1
-            TARGET_Y = 1
+            TARGET_X = -2
+            TARGET_Y = 2
             TARGET_Z = -1
             time.sleep(8)
             # while( (x - TARGET_X) > .1 and (y - TARGET_Y) > 0.1 ):
@@ -180,11 +190,13 @@ def main():
                 # x = msg.x
                 # y = msg.y
                 # z = msg.z
-            # land(the_connection)
-            # takeoff(the_connection, 0.75)
+            land(the_connection)
+            time.sleep(5)
+            takeoff_CUSTOM_coordinates(the_connection, -2, 2, 1)
+            time.sleep(5)
 
-            TARGET_X = -1
-            TARGET_Y = -1
+            TARGET_X = -2
+            TARGET_Y = -2
             TARGET_Z = -1
             time.sleep(8)
             # while( (x - TARGET_X) > .1 and (y - TARGET_Y) > 0.1 ):
@@ -192,11 +204,13 @@ def main():
                 # x = msg.x
                 # y = msg.y
                 # z = msg.z
-            # land(the_connection)
-            # takeoff(the_connection, 0.75)
+            land(the_connection)
+            time.sleep(5)
+            takeoff_CUSTOM_coordinates(the_connection, -2, -2, 1)
+            time.sleep(5)
 
-            TARGET_X = 1
-            TARGET_Y = -1
+            TARGET_X = 2
+            TARGET_Y = -2
             TARGET_Z = -1
             time.sleep(8)
             # while( (x - TARGET_X) > .1 and (y - TARGET_Y) > 0.1 ):
@@ -204,8 +218,20 @@ def main():
                 # x = msg.x
                 # y = msg.y
                 # z = msg.z
-            # land(the_connection)
-            # takeoff(the_connection, 0.75)
+            land(the_connection)
+            time.sleep(5)
+            takeoff_CUSTOM_coordinates(the_connection, 2, -2, 1)
+            time.sleep(5)
+
+            TARGET_X = 2
+            TARGET_Y = 2
+            TARGET_Z = -1
+            time.sleep(8)
+            # while( (x - TARGET_X) > .1 and (y - TARGET_Y) > 0.1 ):
+                # msg = the_connection.messages['LOCAL_POSITION_NED']
+                # x = msg.x
+                # y = msg.y
+                # z = msg.z
 
             TARGET_X = 0
             TARGET_Y = 0
@@ -216,7 +242,9 @@ def main():
                 # x = msg.x
                 # y = msg.y
                 # z = msg.z
-            # land(the_connection)
+            land(the_connection)
+            time.sleep(20)
+
         else:
             print("FLIGHT MODE NOT RECOGNIZED.")
             return
@@ -260,7 +288,7 @@ def takeoff(the_connection, alt):
 
     ################################################
     # the_connection: mavlink connection [input]
-    # alt: float, target altitude [input]
+    # alt: float, target altitude [input] UNUSED
     ################################################
 
     # Takeoff command
@@ -269,6 +297,58 @@ def takeoff(the_connection, alt):
     # Wait for acknowledge
     # msg = the_connection.recv_match(type='COMMAND<ACK', blocking=True)
     # print(msg)
+
+
+def takeoff_CUSTOM(the_connection, alt):
+
+    ################################################
+    # the_connection: mavlink connection [input]
+    # alt: float, target altitude [input]
+    ################################################
+
+    global TARGET_X
+    global TARGET_Y
+    global TARGET_Z
+
+    # Make sure we go up
+    if alt > 0:
+        alt = alt * -1
+
+    # Initialize X, Y, Z
+    msg = the_connection.recv_match(type='LOCAL_POSITION_NED', blocking=True).to_dict()
+    x = msg["x"]
+    y = msg["y"]
+    z = msg["z"]
+
+    # Set initial target
+    TARGET_X = x
+    TARGET_Y = y
+    TARGET_Z = alt
+
+    offboard(the_connection)
+
+
+def takeoff_CUSTOM_coordinates(the_connection, x, y, alt):
+
+    ################################################
+    # the_connection: mavlink connection [input]
+    # alt: float, target altitude [input]
+    ################################################
+
+    global TARGET_X
+    global TARGET_Y
+    global TARGET_Z
+
+    # Make sure we go up
+    if alt > 0:
+        alt = alt * -1
+
+    # Set initial target
+    TARGET_X = x
+    TARGET_Y = y
+    TARGET_Z = alt
+
+    offboard(the_connection)
 
 
 def land(the_connection):
@@ -293,6 +373,9 @@ def update_target_ned(the_connection, x_val, y_val, z_val):
     # y_val: float, desired y target [input]
     # z_val: float, desired z target [input]
     ################################################
+
+    if z_val > 0:
+        z_val = z_val * -1
 
     the_connection.mav.set_position_target_local_ned_send(0, the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_FRAME_LOCAL_NED, type_mask=(
                 # mavutil.mavlink.POSITION_TARGET_TYPEMASK_X_IGNORE |
@@ -365,8 +448,6 @@ def telemetry_local_position_thread(the_connection):
         except:
             print("Problem receiving LOCAL_POSITION_NED Mav message.")
     
-
-
 
 def offboard(the_connection):
 
@@ -471,12 +552,64 @@ def debug_test_land():
         the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_NAV_LAND, 0, 0, 0, 0, 0, 0, 0, 0)
        
 
+def debug_test_takeoff():
+   ################################################
+    # [no inputs or outputs]
+    ################################################
+
+    global TARGET_X
+    global TARGET_Y
+    global TARGET_Z
+    global SEND_TELEMETRY
+    global LAND
+    
+    SEND_TELEMETRY = 1
+    LAND = 0
+
+    # Establish MAVLINK connection
+    the_connection = setup()
+
+    # Arm the system
+    arm(the_connection)
+
+    # Request local coordinates
+    request_local_NED(the_connection)
+
+    # Request target local coordinates
+    request_target_pos_NED(the_connection)
+
+    # Initialize X, Y, Z
+    msg = the_connection.recv_match(type='LOCAL_POSITION_NED', blocking=True).to_dict()
+    x = msg["x"]
+    y = msg["y"]
+    z = msg["z"]
+
+    # Begin our telemtry thread
+    t1 = threading.Thread(target=telemetry_loop_thread, args=(the_connection,))
+    t1.start()
+
+    # Set initial target
+    TARGET_X = x
+    TARGET_Y = y
+    TARGET_Z = -0.5
+
+    # Pause for 5 seconds
+    time.sleep(5)
+
+    while 1:
+        # Takeoff
+        # Enter offboard mode
+        offboard(the_connection)
+        time.sleep(100)
+       
+  
+
 ####################################################################################
 
 
 if __name__ == "__main__":
     main()
-    # debug_test_land()
+    # debug_test_takeoff()
 
     
 ####################################################################################
