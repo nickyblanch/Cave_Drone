@@ -87,6 +87,8 @@ def main():
     # [no inputs or outputs]
     ################################################
 
+    print("working")
+
     global TARGET_X
     global TARGET_Y
     global TARGET_Z
