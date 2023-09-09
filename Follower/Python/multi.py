@@ -17,7 +17,7 @@
 # mavproxy --master=udp:192.168.1.125:14549 --out 127.0.0.1:14553
 # mavproxy --master=udp:192.168.1.125:14550 --out 127.0.0.1:14551 --out 127.0.0.1:14552
 
-# Then, a ground station (QGroundControl) can connect to UD port 14551 and this
+# Then, a ground station (QGroundControl) can connect to UDP port 14551 and this
 # pymavlink script can connect to UDP port 14552.
 
 # The modalai voxl flight will send its MAVLINK traffic to UDP port 14550 and it
