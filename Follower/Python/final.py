@@ -53,6 +53,7 @@
 from pymavlink import mavutil
 import time
 import threading
+import tkinter
 
 
 ####################################################################################
@@ -91,7 +92,11 @@ def main():
     # [no inputs or outputs]
     ################################################
 
-    print("working")
+    ############################################################
+    # SETUP                                                    #
+    ############################################################
+
+    print("DEBUG: Starting Cave Drone GCS...")
 
     global TARGET_X
     global TARGET_Y
@@ -147,23 +152,31 @@ def main():
             msg_success = False
             print("Problem receiving LOCAL_POSITION_NED Mav message.")
 
-        # Update target position
+        
+        ############################################################
+        # NAVIGATION                                               #
+        ############################################################
+
+        # TEST MODE
         if (FLIGHT_MODE == 0):
-            # Test mode
             TARGET_X = TEST_MODE_X
             TARGET_Y = TEST_MODE_Y
             TARGET_Z = TEST_MODE_Z
+
+        # MANUAL MODE
         elif (FLIGHT_MODE == 1):
-            # Manual mode
             try:
                 TARGET_X, TARGET_Y, TARGET_Z = input("Enter target x y z: ").split()
             except:
                 print("Error reading input coordinates.")
             finally:
                 print("Going to: " + str(TARGET_X) + ", " + str(TARGET_Y) + ", " + str(TARGET_Z))
+
+        # AUTONOMOUS MODE
         elif (FLIGHT_MODE == 2):
-            # Autonomous mode
             pass
+
+        # DEMO MODE
         elif (FLIGHT_MODE == 3):
 
             TARGET_X = 0
@@ -258,8 +271,13 @@ def main():
 
 ####################################################################################
 
-
 def setup():
+    ################################################
+    # [no inputs or outputs]
+    ################################################
+
+
+def establish_connection():
 
     ################################################
     # the_connection: mavlink connection [output]
@@ -437,7 +455,7 @@ def telemetry_loop_thread(the_connection):
 
 def telemetry_local_position_thread(the_connection):
 
-     ################################################
+    ################################################
     # the_connection: mavlink connection [input]
     ################################################
 
@@ -486,6 +504,9 @@ def offboard(the_connection):
 ####################################################################################
 
 def debug_test_offboard():
+    ################################################
+    # [no inputs or outputs]
+    ################################################
     # Establish MAVLINK connection
     the_connection = setup()
 
@@ -498,7 +519,7 @@ def debug_test_offboard():
 
 
 def debug_test_land():
-   ################################################
+    ################################################
     # [no inputs or outputs]
     ################################################
 

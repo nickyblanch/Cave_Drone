@@ -41,19 +41,27 @@
 
 ####################################################################################
 
+# DRONE 1: 192.168.1.124:
+# DRONE 2: 192.168.1.126:14549
+
+####################################################################################
+
+
 
 from pymavlink import mavutil
 import time
 import threading
+import tkinter as tk
 
 
 ####################################################################################
 
 
-FLIGHT_MODE = 3         # 0 = test mode: fly to (TEST_MODE_X, TEST_MODE_Y, TEST_MODE_Z)
+FLIGHT_MODE = 4         # 0 = test mode: fly to (TEST_MODE_X, TEST_MODE_Y, TEST_MODE_Z)
                         # 1 = manual mode: fly to coordinates provided by user
                         # 2 = autonomous mode: fly to hard-coded coordinates
                         # 3 = demo: fly is a 2x2 meter square at an altitude of 1 meter.
+                        # 4 = off.
 
 TEST_MODE_X = 1         # target x coordinate in test mode
 TEST_MODE_Y = 1         # target y coordinate in test mode
@@ -65,20 +73,20 @@ SEND_TELEMETRY = 1      # 1 = send telemtry
 LAND = 0                # 1 = landing
                         # 0 = normal operation
 
-TARGET_X_1 = 0            # target x coordinate
-TARGET_Y_1 = 0            # target y coordinate
-TARGET_Z_1 = -1           # target z coordinate
-TARGET_X_2 = 0            # target x coordinate
-TARGET_Y_2 = 0            # target y coordinate
-TARGET_Z_2 = -1           # target z coordinate
+TARGET_X_1 = 0          # target x coordinate
+TARGET_Y_1 = 0          # target y coordinate
+TARGET_Z_1 = -1         # target z coordinate
+TARGET_X_2 = 0          # target x coordinate
+TARGET_Y_2 = 0          # target y coordinate
+TARGET_Z_2 = -1         # target z coordinate
 
 
-CURRENT_X_1 = 0           # current x coordinate
-CURRENT_Y_1 = 0           # current y coordinate
-CURRENT_Z_1 = 0           # current z coordinate
-CURRENT_X_2 = 0           # current x coordinate
-CURRENT_Y_2 = 0           # current y coordinate
-CURRENT_Z_2 = 0           # current z coordinate
+CURRENT_X_1 = 0         # current x coordinate
+CURRENT_Y_1 = 0         # current y coordinate
+CURRENT_Z_1 = 0         # current z coordinate
+CURRENT_X_2 = 0         # current x coordinate
+CURRENT_Y_2 = 0         # current y coordinate
+CURRENT_Z_2 = 0         # current z coordinate
 
 
 ####################################################################################
@@ -93,78 +101,51 @@ def main():
     global TARGET_X
     global TARGET_Y
     global TARGET_Z
-    global CURRENT_X
-    global CURRENT_Y
-    global CURRENT_Z
     global SEND_TELEMETRY
 
-    # Establish MAVLINK connection
+    # Setup
     drone1, drone2 = setup()
 
-    # Arm the system
+    # Take off
+    # (TODO: CHECK FOR USER INPUT)
     arm(drone1)
     arm(drone2)
-
-    # Request local coordinates
-    request_local_NED(drone1)
-    request_local_NED(drone2)
-
-    # Request target local coordinates
-    request_target_pos_NED(drone1)
-    request_target_pos_NED(drone2)
-
-    # Initialize X, Y, Z
-    msg = drone1.recv_match(type='LOCAL_POSITION_NED', blocking=True).to_dict()
-    x = msg["x"]
-    y = msg["y"]
-    z = msg["z"]
-
-    # Begin our telemtry thread
-    t1 = threading.Thread(target=telemetry_loop_thread, args=(drone1,))
-    t1.start()
-    t2 = threading.Thread(target=telemetry_local_position_thread, args=(drone1,))
-    t2.start()
-
-    # Take off
+    time.sleep(.5);
     takeoff_CUSTOM(drone1, 1)
     takeoff_CUSTOM(drone2, 1)
 
     # Loop
-    print("Entering loop")
     while 1:
 
         # Note: In order for PX4 to remain in offboard mode, it needs to receive target commands
         # at a rate of at least 2 Hz.
         SEND_TELEMETRY = 1
 
-        # Update current position
-        try:
-            msg = drone1.messages['LOCAL_POSITION_NED']
-            CURRENT_X = msg.x
-            CURRENT_Y = msg.y
-            CURRENT_Z = msg.z
-            msg_success = True
-        except:
-            msg_success = False
-            print("Problem receiving LOCAL_POSITION_NED Mav message.")
+        ############################################################
+        # NAVIGATION                                               #
+        ############################################################
 
-        # Update target position
+        # TEST MODE
         if (FLIGHT_MODE == 0):
             # Test mode
             TARGET_X = TEST_MODE_X
             TARGET_Y = TEST_MODE_Y
             TARGET_Z = TEST_MODE_Z
+
+        # MANUAL MODE
         elif (FLIGHT_MODE == 1):
-            # Manual mode
             try:
                 TARGET_X, TARGET_Y, TARGET_Z = input("Enter target x y z: ").split()
             except:
                 print("Error reading input coordinates.")
             finally:
                 print("Going to: " + str(TARGET_X) + ", " + str(TARGET_Y) + ", " + str(TARGET_Z))
+
+        # AUTONOMOUS MODE
         elif (FLIGHT_MODE == 2):
-            # Autonomous mode
             pass
+
+        # DEMO MODE
         elif (FLIGHT_MODE == 3):
 
             TARGET_X = 0
@@ -239,6 +220,10 @@ def main():
                 # z = msg.z
             land(drone1)
 
+        # OFF
+        elif(FLIGHT_MODE == 4):
+            pass
+
         else:
             print("FLIGHT MODE NOT RECOGNIZED.")
             return
@@ -247,7 +232,66 @@ def main():
 ####################################################################################
 
 
+
+def create_GUI():
+    ################################################
+    # 
+    ################################################
+
+    # Window
+    window = tk.Tk()
+
+
+####################################################################################
+
 def setup():
+    ################################################
+    # drone1: mavlink connection [output]
+    # drone2: mavlink connection [output]
+    # x: initial x coordinate [output]
+    # y: initial x coordinate [output]
+    # z: initial x coordinate [output]
+    ################################################
+
+    global CURRENT_X_1
+    global CURRENT_Y_1
+    global CURRENT_Z_1
+    global CURRENT_X_2
+    global CURRENT_Y_2
+    global CURRENT_Z_2
+
+    # Establish MAVLINK connection
+    drone1, drone2 = establish_connection()
+
+    # Request local coordinates
+    request_local_NED(drone1)
+    request_local_NED(drone2)
+
+    # Request target local coordinates
+    request_target_pos_NED(drone1)
+    request_target_pos_NED(drone2)
+
+    # Initialize X, Y, Z
+    msg = drone1.recv_match(type='LOCAL_POSITION_NED', blocking=True).to_dict()
+    CURRENT_X_1 = msg["x"]
+    CURRENT_Y_1 = msg["y"]
+    CURRENT_Z_1= msg["z"]
+
+    msg = drone2.recv_match(type='LOCAL_POSITION_NED', blocking=True).to_dict()
+    CURRENT_X_2 = msg["x"]
+    CURRENT_Y_2 = msg["y"]
+    CURRENT_Z_2= msg["z"]
+
+    # Begin our telemtry thread
+    t1 = threading.Thread(target=telemetry_loop_thread, args=(drone1,))
+    t1.start()
+    t2 = threading.Thread(target=telemetry_local_position_thread, args=(drone1,))
+    t2.start()
+
+    return (drone1, drone2)
+
+
+def establish_connection():
 
     ################################################
     # drone1: mavlink connection [output]
@@ -711,5 +755,6 @@ def debug_test_demo():
 if __name__ == "__main__":
     # main()
     # debug_test_takeoff()
-    debug_test_demo()
+    # debug_test_demo()
+    pass
 
