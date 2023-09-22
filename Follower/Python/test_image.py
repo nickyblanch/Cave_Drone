@@ -55,6 +55,13 @@ def setup():
     # Set size of window
     window.geometry(str(window_width) + "x" +  str(window_height))
 
+    # Create canavs
+    mars = PhotoImage(file = r"C:\Users\nicky\OneDrive\Pictures\mars_blurred_resized.png", master=window)
+    canvas = tk.Canvas(window, width=window_width, height=window_height)
+    canvas.pack()
+    canvas.background = mars
+    bg = canvas.create_image(0, 0, anchor=tk.NW, image=mars)
+
     # # Create frames WITH BACKGROUND COLORS
     # top_frame = Frame(window, bg='cyan', width=1920, height=window_height/5)
     # left_frame = Frame(window, bg='red', width=window_width/2, height=window_height*2/5)
@@ -65,9 +72,9 @@ def setup():
     # right_frame_bottom_coords = Frame(window, bg='pink', width=window_width/2, height=window_height*1/10)
     # bottom_frame = Frame(window, bg='blue', width=window_width/2, height=window_height/5)
 
-    top_frame = Frame(window, width=1920, height=window_height/5)
-    left_frame = Frame(window, width=window_width/2, height=window_height*2/5)
-    left_frame_bottom = Frame(window, width=window_width/2, height=window_height*1/10)
+    top_frame = Frame(window, width=1920, height=window_height/5, bg='')
+    left_frame = Frame(window, width=window_width/2, height=window_height*2/5, bg='')
+    left_frame_bottom = Frame(window, width=window_width/2, height=window_height*1/10, bg='')
     left_frame_bottom_coords = Frame(window, width=window_width/2, height=window_height*1/10)
     right_frame = Frame(window, width=window_width/2, height=window_height*2/5)
     right_frame_bottom = Frame(window, width=window_width/2, height=window_height*1/10)
@@ -95,9 +102,9 @@ def setup():
     left_frame_bottom.grid_propagate(False)
     left_frame_bottom.pack_propagate(False)
     left_frame_bottom.columnconfigure(0, weight=1)
-    left_frame_bottom.columnconfigure(1, weight=0)
-    left_frame_bottom.columnconfigure(2, weight=0)
-    left_frame_bottom.columnconfigure(3, weight=0)
+    left_frame_bottom.columnconfigure(1, weight=1)
+    left_frame_bottom.columnconfigure(2, weight=1)
+    left_frame_bottom.columnconfigure(3, weight=1)
     left_frame_bottom.columnconfigure(4, weight=1)
     left_frame_bottom_coords.grid_propagate(False)
     left_frame_bottom_coords.pack_propagate(False)
@@ -111,9 +118,9 @@ def setup():
     right_frame_bottom.grid_propagate(False)
     right_frame_bottom.pack_propagate(False)
     right_frame_bottom.columnconfigure(0, weight=1)
-    right_frame_bottom.columnconfigure(1, weight=0)
-    right_frame_bottom.columnconfigure(2, weight=0)
-    right_frame_bottom.columnconfigure(3, weight=0)
+    right_frame_bottom.columnconfigure(1, weight=1)
+    right_frame_bottom.columnconfigure(2, weight=1)
+    right_frame_bottom.columnconfigure(3, weight=1)
     right_frame_bottom.columnconfigure(4, weight=1)
     right_frame_bottom_coords.grid_propagate(False)
     right_frame_bottom_coords.pack_propagate(False)
@@ -128,40 +135,6 @@ def setup():
     bottom_frame.columnconfigure(4, weight=1)
     bottom_frame.columnconfigure(5, weight=1)
     bottom_frame.rowconfigure(0, weight=1)
-
-    # TODO: Set backgrounds
-    mars_top = PhotoImage(file = r"\GUI Images\mars_top.png", master=window)
-    background_label_top = Label(top_frame, image=mars_top)
-    background_label_top.img = mars_top
-    background_label_top.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_left = PhotoImage(file = r"C:\Users\nicky\OneDrive\Pictures\mars_left.png", master=window)
-    background_label_left = Label(left_frame, image=mars_left)
-    background_label_left.img = mars_left
-    background_label_left.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_left_bottom = PhotoImage(file = r"C:\Users\nicky\OneDrive\Pictures\mars_left_bottom.png", master=window)
-    background_label_left_bottom = Label(left_frame_bottom, image=mars_left_bottom)
-    background_label_left_bottom.img = mars_left_bottom
-    background_label_left_bottom.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_left_bottom_coords = PhotoImage(file = r"C:\Users\nicky\OneDrive\Pictures\mars_left_bottom_coords.png", master=window)
-    background_label_left_bottom_coords = Label(left_frame_bottom_coords, image=mars_left_bottom_coords)
-    background_label_left_bottom_coords.img = mars_left_bottom_coords
-    background_label_left_bottom_coords.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_right = PhotoImage(file = r"C:\Users\nicky\OneDrive\Pictures\mars_right.png", master=window)
-    background_label_right = Label(right_frame, image=mars_right)
-    background_label_right.img = mars_right
-    background_label_right.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_right_bottom = PhotoImage(file = r"C:\Users\nicky\OneDrive\Pictures\mars_right_bottom.png", master=window)
-    background_label_right_bottom = Label(right_frame_bottom, image=mars_right_bottom)
-    background_label_right_bottom.img = mars_right_bottom
-    background_label_right_bottom.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_right_bottom_coords = PhotoImage(file = r"C:\Users\nicky\OneDrive\Pictures\mars_right_bottom_coords.png", master=window)
-    background_label_right_bottom_coords = Label(right_frame_bottom_coords, image=mars_right_bottom_coords)
-    background_label_right_bottom_coords.img = mars_right_bottom_coords
-    background_label_right_bottom_coords.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_bottom = PhotoImage(file = r"C:\Users\nicky\OneDrive\Pictures\mars_bottom.png", master=window)
-    background_label_bottom = Label(bottom_frame, image=mars_bottom)
-    background_label_bottom.img = mars_bottom
-    background_label_bottom.place(x=0, y=0, relwidth=1, relheight=1)
     
     # Title
     title = Label(top_frame, text='CAVE DRONE GCS', font=('Arial 26'))
@@ -221,7 +194,7 @@ def setup():
 
     # Mode buttons
     drone_1_off_button = Button(left_frame_bottom, text="OFF", width=7, command=lambda: update_flight_mode("1", "4"))
-    drone_1_off_button.grid(row=1, column=0, padx=4, pady=2, sticky='e')
+    drone_1_off_button.grid(row=1, column=0, padx=4, pady=2, sticky='w')
     drone_1_test_button = Button(left_frame_bottom, text="TEST", width=7, command=lambda: update_flight_mode("1", "0"))
     drone_1_test_button.grid(row=1, column=1, padx=4, pady=2, sticky='w')
     drone_1_manual_button = Button(left_frame_bottom, text="MANUAL", width=7, command=lambda: update_flight_mode("1", "1"))
@@ -231,7 +204,7 @@ def setup():
     drone_1_autonomous_button = Button(left_frame_bottom, text="AUTO", width=7, command=lambda: update_flight_mode("1", "2"))
     drone_1_autonomous_button.grid(row=1, column=4, padx=4, pady=2, sticky='w')
     drone_2_off_button = Button(right_frame_bottom, text="OFF", width=7, command=lambda: update_flight_mode("2", "4"))
-    drone_2_off_button.grid(row=1, column=0, padx=4, pady=2, sticky='e')
+    drone_2_off_button.grid(row=1, column=0, padx=4, pady=2, sticky='w')
     drone_2_test_button = Button(right_frame_bottom, text="TEST", width=7, command=lambda: update_flight_mode("2", "0"))
     drone_2_test_button.grid(row=1, column=1, padx=4, pady=2, sticky='w')
     drone_2_manual_button = Button(right_frame_bottom, text="MANUAL", width=7, command=lambda: update_flight_mode("2", "1"))
