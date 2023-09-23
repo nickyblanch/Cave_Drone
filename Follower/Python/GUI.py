@@ -130,7 +130,7 @@ def setup():
     bottom_frame.rowconfigure(0, weight=1)
 
     # TODO: Set backgrounds
-    mars_top = PhotoImage(file = r"\GUI Images\mars_top.png", master=window)
+    mars_top = PhotoImage(file = r"mars_top.png", master=window)
     background_label_top = Label(top_frame, image=mars_top)
     background_label_top.img = mars_top
     background_label_top.place(x=0, y=0, relwidth=1, relheight=1)
