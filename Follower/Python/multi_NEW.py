@@ -1,13 +1,17 @@
 ###################################################################################################
-# Author: Nicolas Blanchard, nickyblanch@arizona.edu, (520) 834-3191
-# Contact:
-# Purpose: Automatic control for follower drone in cave drone project.
-# Introduction: 
-# Created for Dr. Shkarayev at the University of Arizona
-# Dependencies: pymavlink, time, threading
+#          Author: Nicolas Blanchard
+#         Contact: nickyblanch@arizona.edu | (520) 834-3191
+#         Purpose: Automatic control for follower drone in cave drone project.
+#    Introduction: This code uses the pymavlink package (primarily the mavutil components) to
+#                  create controls and a GUI for controlling drones running the PX4 flight
+#                  stack. It is specifically tailored to test custom code, GPS-denied
+#                  navigation, and 'train' (swarm) operation. Created as a part of my MS
+#                  thesis in Electrical & Computer Engineering at the University of Arizona.
+#    Dependencies: pymavlink, time, threading, os, tkinter
+# Reproducibility: Tested to work on Windows 11 and Ubunutu 22.xx as of 9/25/2023. Please install
+#                  the pymavlink and tkinter libraries before proceeding.
 
 # Thank you to ardusub.com Intelligent Quads on YouTube for pymavlink references.
-
 
 # ADDITIONAL COMMENTS
 
@@ -102,6 +106,9 @@ drone2 = 0                  # Drone 2 variable
 
 
 def main():
+    ################################################
+    # Main!
+    ################################################
 
     # Setup GUI
     setup_GUI()
