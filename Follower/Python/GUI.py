@@ -7,7 +7,7 @@
 # Libraries
 ####################################################################################
 
-
+import os
 import tkinter as tk
 from tkinter import ttk
 from tkinter import *
@@ -130,11 +130,12 @@ def setup():
     bottom_frame.rowconfigure(0, weight=1)
 
     # TODO: Set backgrounds
-    mars_top = PhotoImage(file = r"mars_top.png", master=window)
+    cwd = os.getcwd()
+    mars_top = PhotoImage(file = cwd+"\pictures\mars_top.png", master=window)
     background_label_top = Label(top_frame, image=mars_top)
     background_label_top.img = mars_top
     background_label_top.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_left = PhotoImage(file = r"C:\Users\nicky\OneDrive\Pictures\mars_left.png", master=window)
+    mars_left = PhotoImage(file = cwd+"\puctyres\mars_left.png", master=window)
     background_label_left = Label(left_frame, image=mars_left)
     background_label_left.img = mars_left
     background_label_left.place(x=0, y=0, relwidth=1, relheight=1)
