@@ -7,10 +7,13 @@
 # Libraries
 ####################################################################################
 
+
 import os
 import tkinter as tk
 from tkinter import ttk
 from tkinter import *
+import threading
+
 
 
 ####################################################################################
@@ -31,7 +34,7 @@ window_height = 450
 ####################################################################################
 
 
-def setup():
+def setup_GUI():
 
     # DEBUG
     # print("Setup")
@@ -48,6 +51,7 @@ def setup():
     global drone_2_x_entry
     global drone_2_y_entry
     global drone_2_z_entry
+    global TEST_COORD
 
     # Create window
     window = Tk()
@@ -131,35 +135,35 @@ def setup():
 
     # TODO: Set backgrounds
     cwd = os.getcwd()
-    mars_top = PhotoImage(file = cwd+"\pictures\mars_top.png", master=window)
+    mars_top = PhotoImage(file = cwd+"\Follower\Python\GUI_Images\mars_top.png", master=window)
     background_label_top = Label(top_frame, image=mars_top)
     background_label_top.img = mars_top
     background_label_top.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_left = PhotoImage(file = cwd+"\puctyres\mars_left.png", master=window)
+    mars_left = PhotoImage(file = cwd+"\Follower\Python\GUI_Images\mars_left.png", master=window)
     background_label_left = Label(left_frame, image=mars_left)
     background_label_left.img = mars_left
     background_label_left.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_left_bottom = PhotoImage(file = r"C:\Users\nicky\OneDrive\Pictures\mars_left_bottom.png", master=window)
+    mars_left_bottom = PhotoImage(file = cwd+"\Follower\Python\GUI_Images\mars_left_bottom.png", master=window)
     background_label_left_bottom = Label(left_frame_bottom, image=mars_left_bottom)
     background_label_left_bottom.img = mars_left_bottom
     background_label_left_bottom.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_left_bottom_coords = PhotoImage(file = r"C:\Users\nicky\OneDrive\Pictures\mars_left_bottom_coords.png", master=window)
+    mars_left_bottom_coords = PhotoImage(file = cwd+"\Follower\Python\GUI_Images\mars_left_bottom_coords.png", master=window)
     background_label_left_bottom_coords = Label(left_frame_bottom_coords, image=mars_left_bottom_coords)
     background_label_left_bottom_coords.img = mars_left_bottom_coords
     background_label_left_bottom_coords.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_right = PhotoImage(file = r"C:\Users\nicky\OneDrive\Pictures\mars_right.png", master=window)
+    mars_right = PhotoImage(file = cwd+"\Follower\Python\GUI_Images\mars_right.png", master=window)
     background_label_right = Label(right_frame, image=mars_right)
     background_label_right.img = mars_right
     background_label_right.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_right_bottom = PhotoImage(file = r"C:\Users\nicky\OneDrive\Pictures\mars_right_bottom.png", master=window)
+    mars_right_bottom = PhotoImage(file =cwd+"\Follower\Python\GUI_Images\mars_right_bottom.png", master=window)
     background_label_right_bottom = Label(right_frame_bottom, image=mars_right_bottom)
     background_label_right_bottom.img = mars_right_bottom
     background_label_right_bottom.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_right_bottom_coords = PhotoImage(file = r"C:\Users\nicky\OneDrive\Pictures\mars_right_bottom_coords.png", master=window)
+    mars_right_bottom_coords = PhotoImage(file = cwd+"\Follower\Python\GUI_Images\mars_right_bottom_coords.png", master=window)
     background_label_right_bottom_coords = Label(right_frame_bottom_coords, image=mars_right_bottom_coords)
     background_label_right_bottom_coords.img = mars_right_bottom_coords
     background_label_right_bottom_coords.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_bottom = PhotoImage(file = r"C:\Users\nicky\OneDrive\Pictures\mars_bottom.png", master=window)
+    mars_bottom = PhotoImage(file = cwd+"\Follower\Python\GUI_Images\mars_bottom.png", master=window)
     background_label_bottom = Label(bottom_frame, image=mars_bottom)
     background_label_bottom.img = mars_bottom
     background_label_bottom.place(x=0, y=0, relwidth=1, relheight=1)
@@ -292,6 +296,8 @@ def setup():
     # Add current x,y,z coordinates in bottom frame
 
     # Configure grid
+    window.resizable(False, False)
+    window.title("MAV Lab")
     window.rowconfigure(9)
     window.columnconfigure((0, 1), weight = 1, uniform="column")
 
@@ -357,16 +363,22 @@ def update_flight_mode(drone_number, mode):
 
 
 def update_coords(drone_number):
+    global drone_1_x_entry
+    drone_1_x_entry=drone_1_x_entry.get()
     if drone_number == "1":
-        print("DRONE " + drone_number + " TARGET COORDS: " + drone_1_x_entry.get() + " " + drone_1_y_entry.get() + " " + drone_1_z_entry.get())
+        print("DRONE " + drone_number + " TARGET COORDS: " + drone_1_x_entry + " " + drone_1_y_entry.get() + " " + drone_1_z_entry.get())
     else:
         print("DRONE " + drone_number + " TARGET COORDS: " + drone_2_x_entry.get() + " " + drone_2_y_entry.get() + " " + drone_2_z_entry.get())
 
+def print_coords():
+    print(drone_1_x_entry)
+    window.after(1, print_coords)
 
 def main():
 
-    setup()
+    setup_GUI()
 
+    window.after(1, print_coords)
     window.mainloop()
 
 
