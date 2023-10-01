@@ -1,0 +1,21 @@
+################################################################################
+# EKF2 config for indoor VIO Flight
+# Turns off GPS and barometer
+################################################################################
+
+## disable mag
+1	1	SYS_HAS_MAG	0	6
+1	1	EKF2_MAG_TYPE	5	6
+
+## enable vision for height, position, and velocity, no GPS or barometer
+1	1	EKF2_AID_MASK	280	6
+1	1	EKF2_HGT_MODE	3	6
+
+## set MD to 0 to allow covarience from VIO to be used
+1	1	EKF2_EV_NOISE_MD	0	6
+
+## Turn off EV Delay, VOXL will do proper timesyncing
+1	1	EKF2_EV_DELAY	0.00	9
+
+## Allow arming without GPS indoors
+1	1	COM_ARM_WO_GPS	1	9

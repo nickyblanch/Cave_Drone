@@ -1,0 +1,46 @@
+################################################################################
+# Config for indoor flight with vio only, but system still has a gps/mag present
+################################################################################
+
+
+################################################################################
+# attached hardware (not necessary used)
+################################################################################
+1	1	SYS_HAS_MAG	1	6
+1	1	SYS_HAS_GPS	1	6
+1	1	COM_ARM_WO_GPS	1	9
+
+
+################################################################################
+# enabled sensors in EKF2
+################################################################################
+1	1	EKF2_GPS_CTRL	0	6
+1	1	EKF2_MAG_TYPE	5	6
+1	1	EKF2_BARO_CTRL	1	6
+1	1	EKF2_EV_CTRL	15	6
+1	1	EKF2_OF_CTRL	0	6
+1	1	EKF2_RNG_CTRL	0	6
+
+# 0=baro 1=GPS 2=rangefinder 3=Vision
+1	1	EKF2_HGT_REF	3	6
+
+
+
+############################################################
+# VIO-sepcific things
+############################################################
+
+## set MD to 0 to allow covarience from VIO to be used
+1	1	EKF2_EV_NOISE_MD	0	6
+
+## default noise values
+1	1	EKF2_EVA_NOISE	0.1	9
+1	1	EKF2_EVP_GATE	5.0	9
+1	1	EKF2_EVP_NOISE	0.1	9
+1	1	EKF2_EVV_GATE	3.0	9
+1	1	EKF2_EVV_NOISE	0.1	9
+
+## Turn off EV Delay, VOXL will do proper timesyncing
+1	1	EKF2_EV_DELAY	0.00	9
+
+1	1	EKF2_EV_QMIN	1	6
