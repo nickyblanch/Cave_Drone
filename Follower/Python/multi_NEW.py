@@ -17,28 +17,27 @@
 
 # Important: In order for this pymavlink script to execute on a ground station computer,
 # run QGroundcontrol, and still communicate with the drone, MAVProxy is required to route
-# the MAVLINK messages. The following command should be used to start MAVProxy:
+# the MAVLINK messages. Because we only need to monitor the leader on QGroundcontrol,
+# we only require MAXProxy for the leader, and not the follower.
+# The following commands should be used to start MAVProxy:
 
-# mavproxy --master=udp:192.168.1.125:14549 --out 127.0.0.1:14553
-# mavproxy --master=udp:192.168.1.125:14550 --out 127.0.0.1:14551 --out 127.0.0.1:14552
+# mavproxy --master=udp:192.168.1.125:14549 --out 127.0.0.1:14553                       (FOLLOWER / OPTIONAL))
+# mavproxy --master=udp:192.168.1.125:14550 --out 127.0.0.1:14551 --out 127.0.0.1:14552 (LEADER / REQUIRED)
 
-# Then, a ground station (QGroundControl) can connect to UDP port 14551 and this
-# pymavlink script can connect to UDP port 14552.
-
-# The modalai voxl flight will send its MAVLINK traffic to UDP port 14550 and it
-# will be visible on both QGroundControl and this executing pymavlink script.
+# Then, a ground station (QGroundControl) can connect to UDP port 14551 to monitor the
+# leader drone. The vehicles can be connected to at the following addresses:
+# 127.0.0.1:14553 (FOLLOWER, IF USING MAXPROXY FOR FOLLOWER)
+# 192.168.1.124: (FOLLOWER, IF NOT USING MAVPROXY FOR FOLLOWER)
+# 127.0.0.1:14552 (LEADER, MUST USE MAVPROXY FOR LEADER)
 
 # When calibrating sensors, the closest board orientation is: YAW 90 ROLL 90 PITCH 180
-
-# NOTE: In QGroundcontrol, MAVLink forwarding must be enabled and the forwarding address
-# must be port 14552.
 
 ###################################################################################################
 # TODO
 
 # 1.) Decrease proportional gain for velocity PID
-# 2.) Change SYS_ID of Drone 2 -> Run two MAVProxy instances, each having one drone selected ->
-#     each instance forwards to a different UDP port -> can connect two Pymavlink variables.
+# 2.) Change SYS_ID of Drones! That way they can both be shown in QGroundcontrol.
+# 3.) Re-calibrate drone sensors and finalize PX4 parameters.
 
 ###################################################################################################
 
