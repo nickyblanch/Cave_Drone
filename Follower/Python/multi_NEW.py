@@ -90,7 +90,7 @@ CURRENT_X_2 = 0             # current x coordinate
 CURRENT_Y_2 = 0             # current y coordinate
 CURRENT_Z_2 = 0             # current z coordinate
 
-drone_1_IP = "127.0.0.1"  # IP address of Drone 1
+drone_1_IP = "127.0.0.1"    # IP address of Drone 1
 drone_2_IP = "192.168.1.2"  # IP address of Drone 2
 drone_1_UDP = 14552         # UDP port of Drone 1
 drone_2_UDP = 1             # UDP port of Drone 2
@@ -127,9 +127,9 @@ def flight_loop():
     ################################################
 
 
-    global TARGET_X
-    global TARGET_Y
-    global TARGET_Z
+    global TARGET_X_1
+    global TARGET_Y_1
+    global TARGET_Z_1
     global SEND_TELEMETRY
 
 
