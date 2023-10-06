@@ -59,7 +59,7 @@ from tkinter import *
 ###################################################################################################
 
 
-FLIGHT_MODE = 4             # 0 = test mode: fly to (TEST_MODE_X, TEST_MODE_Y, TEST_MODE_Z)
+FLIGHT_MODE = 2             # 0 = test mode: fly to (TEST_MODE_X, TEST_MODE_Y, TEST_MODE_Z)
                             # 1 = manual mode: fly to coordinates provided by user
                             # 2 = autonomous mode: fly to hard-coded coordinates
                             # 3 = demo: fly is a 2x2 meter square at an altitude of 1 meter.
@@ -116,137 +116,8 @@ def main():
     setup()
 
     # Window mainloop
-    # window.after(1000, flight_loop())
-    window.after(100, update_current_coords)
+    window.after(0, update_current_coords)
     window.mainloop()
-    
-
-def flight_loop():
-    ################################################
-    # [no inputs or outputs]
-    ################################################
-
-
-    global TARGET_X_1
-    global TARGET_Y_1
-    global TARGET_Z_1
-    global SEND_TELEMETRY
-
-
-    # Note: In order for PX4 to remain in offboard mode, it needs to receive target commands
-    # at a rate of at least 2 Hz.
-
-    ############################################################
-    # NAVIGATION                                               #
-    ############################################################
-
-    # TEST MODE
-    if (FLIGHT_MODE == 0):
-        # Test mode
-        TARGET_X = TEST_MODE_X
-        TARGET_Y = TEST_MODE_Y
-        TARGET_Z = TEST_MODE_Z
-
-    # MANUAL MODE
-    elif (FLIGHT_MODE == 1):
-        try:
-            TARGET_X, TARGET_Y, TARGET_Z = input("Enter target x y z: ").split()
-        except:
-            print("Error reading input coordinates.")
-        finally:
-            print("Going to: " + str(TARGET_X) + ", " + str(TARGET_Y) + ", " + str(TARGET_Z))
-
-    # AUTONOMOUS MODE
-    elif (FLIGHT_MODE == 2):
-        pass
-
-    # DEMO MODE
-    elif (FLIGHT_MODE == 3 and drone1 and drone2):
-
-        TARGET_X = 0
-        TARGET_Y = 0
-        TARGET_Z = -1
-        time.sleep(15)
-
-        TARGET_X = 1
-        TARGET_Y = 1
-        TARGET_Z = -1
-        time.sleep(8)
-        # while( (x - TARGET_X) > .1 and (y - TARGET_Y) > 0.1 ):
-            # msg = drone1.messages['LOCAL_POSITION_NED']
-            # x = msg.x
-            # y = msg.y
-            # z = msg.z
-        land(drone1)
-        time.sleep(5)
-        takeoff_CUSTOM(drone1, 1)
-        time.sleep(5)
-
-        TARGET_X = -1
-        TARGET_Y = 1
-        TARGET_Z = -1
-        time.sleep(8)
-        # while( (x - TARGET_X) > .1 and (y - TARGET_Y) > 0.1 ):
-            # msg = drone1.messages['LOCAL_POSITION_NED']
-            # x = msg.x
-            # y = msg.y
-            # z = msg.z
-        land(drone1)
-        time.sleep(5)
-        takeoff_CUSTOM(drone1, 1)
-        time.sleep(5)
-
-        TARGET_X = -1
-        TARGET_Y = -1
-        TARGET_Z = -1
-        time.sleep(8)
-        # while( (x - TARGET_X) > .1 and (y - TARGET_Y) > 0.1 ):
-            # msg = drone1.messages['LOCAL_POSITION_NED']
-            # x = msg.x
-            # y = msg.y
-            # z = msg.z
-        land(drone1)
-        time.sleep(5)
-        takeoff_CUSTOM(drone1, 1)
-        time.sleep(5)
-
-        TARGET_X = 1
-        TARGET_Y = -1
-        TARGET_Z = -1
-        time.sleep(8)
-        # while( (x - TARGET_X) > .1 and (y - TARGET_Y) > 0.1 ):
-            # msg = drone1.messages['LOCAL_POSITION_NED']
-            # x = msg.x
-            # y = msg.y
-            # z = msg.z
-        land(drone1)
-        time.sleep(5)
-        takeoff_CUSTOM(drone1, 1)
-        time.sleep(5)
-
-        TARGET_X = 0
-        TARGET_Y = 0
-        TARGET_Z = -1
-        time.sleep(8)
-        # while( (x - TARGET_X) > .1 and (y - TARGET_Y) > 0.1 ):
-            # msg = drone1.messages['LOCAL_POSITION_NED']
-            # x = msg.x
-            # y = msg.y
-            # z = msg.z
-        land(drone1)
-
-    # OFF
-    elif(FLIGHT_MODE == 4):
-        if drone1:
-            disarm(drone1)
-        if drone2:
-            disarm(drone2)
-
-    else:
-        print("FLIGHT MODE NOT RECOGNIZED.")
-        return
-    
-    window.after(1000, flight_loop())
     
 
 ###################################################################################################
@@ -275,6 +146,12 @@ def setup_GUI():
     global drone_2_x_coord
     global drone_2_y_coord
     global drone_2_z_coord
+    global drone_1_x_target
+    global drone_1_y_target
+    global drone_1_z_target
+    global drone_2_x_target
+    global drone_2_y_target
+    global drone_2_z_target
 
     # Create window
     window = Tk()
@@ -481,30 +358,42 @@ def setup_GUI():
     drone_2_coords_button.grid(row=1, column=3, columnspan=2, padx=4, pady=2, sticky='w')
 
     # Current coordinate feedback
-    drone_1_x_coord = Label(bottom_frame, text='1.01', font=('Arial 16'))
-    drone_1_x_coord.grid(row = 0, column = 0)
-    drone_1_y_coord = Label(bottom_frame, text='0.75', font=('Arial 16'))
-    drone_1_y_coord.grid(row = 0, column = 1)
-    drone_1_z_coord = Label(bottom_frame, text='-0.88', font=('Arial 16'))
-    drone_1_z_coord.grid(row = 0, column = 2)
-    drone_2_x_coord = Label(bottom_frame, text='1.01', font=('Arial 16'))
-    drone_2_x_coord.grid(row = 0, column = 3)
-    drone_2_y_coord = Label(bottom_frame, text='0.75', font=('Arial 16'))
-    drone_2_y_coord.grid(row = 0, column = 4)
-    drone_2_z_coord = Label(bottom_frame, text='-0.88', font=('Arial 16'))
-    drone_2_z_coord.grid(row = 0, column = 5)
+    drone_1_x_coord = Label(bottom_frame, text='1.01', font=('Arial 12'))
+    drone_1_x_coord.grid(row = 3, column = 0)
+    drone_1_y_coord = Label(bottom_frame, text='0.75', font=('Arial 12'))
+    drone_1_y_coord.grid(row = 3, column = 1)
+    drone_1_z_coord = Label(bottom_frame, text='-0.88', font=('Arial 12'))
+    drone_1_z_coord.grid(row = 3, column = 2)
+    drone_2_x_coord = Label(bottom_frame, text='1.01', font=('Arial 12'))
+    drone_2_x_coord.grid(row = 3, column = 3)
+    drone_2_y_coord = Label(bottom_frame, text='0.75', font=('Arial 12'))
+    drone_2_y_coord.grid(row = 3, column = 4)
+    drone_2_z_coord = Label(bottom_frame, text='-0.88', font=('Arial 12'))
+    drone_2_z_coord.grid(row = 3, column = 5)
     drone_1_x_lab = Label(bottom_frame, text='X', font=('Arial 16'))
-    drone_1_x_lab.grid(row = 1, column = 0)
+    drone_1_x_lab.grid(row = 0, column = 0)
     drone_1_y_lab = Label(bottom_frame, text='Y', font=('Arial 16'))
-    drone_1_y_lab.grid(row = 1, column = 1)
+    drone_1_y_lab.grid(row = 0, column = 1)
     drone_1_z_lab = Label(bottom_frame, text='Z', font=('Arial 16'))
-    drone_1_z_lab.grid(row = 1, column = 2)
+    drone_1_z_lab.grid(row = 0, column = 2)
     drone_2_x_lab = Label(bottom_frame, text='X', font=('Arial 16'))
-    drone_2_x_lab.grid(row = 1, column = 3)
+    drone_2_x_lab.grid(row = 0, column = 3)
     drone_2_y_lab = Label(bottom_frame, text='Y', font=('Arial 16'))
-    drone_2_y_lab.grid(row = 1, column = 4)
+    drone_2_y_lab.grid(row = 0, column = 4)
     drone_2_z_lab = Label(bottom_frame, text='Z', font=('Arial 16'))
-    drone_2_z_lab.grid(row = 1, column = 5)
+    drone_2_z_lab.grid(row = 0, column = 5)
+    drone_1_x_target = Label(bottom_frame, text='-10', font=('Arial 12'))
+    drone_1_x_target.grid(row = 2, column = 0)
+    drone_1_y_target = Label(bottom_frame, text='-10', font=('Arial 12'))
+    drone_1_y_target.grid(row = 2, column = 1)
+    drone_1_z_target = Label(bottom_frame, text='-10', font=('Arial 12'))
+    drone_1_z_target.grid(row = 2, column = 2)
+    drone_2_x_target = Label(bottom_frame, text='-10', font=('Arial 12'))
+    drone_2_x_target.grid(row = 2, column = 3)
+    drone_2_y_target = Label(bottom_frame, text='-10', font=('Arial 12'))
+    drone_2_y_target.grid(row = 2, column = 4)
+    drone_2_z_target = Label(bottom_frame, text='-10', font=('Arial 12'))
+    drone_2_z_target.grid(row = 2, column = 5)
 
     # TODO:
     # Add current x,y,z coordinates in bottom frame
@@ -528,7 +417,15 @@ def update_current_coords():
     drone_2_y_coord.config(text=str(CURRENT_Y_2))
     drone_2_z_coord.config(text=str(CURRENT_Z_2))
 
-    # window.after(0, update_current_coords)
+    drone_1_x_target.config(text=str(TARGET_X_1))
+    drone_1_y_target.config(text=str(TARGET_Y_1))
+    drone_1_z_target.config(text=str(TARGET_Z_1))
+
+    drone_2_x_target.config(text=str(TARGET_X_2))
+    drone_2_y_target.config(text=str(TARGET_Y_2))
+    drone_2_z_target.config(text=str(TARGET_Z_2))
+
+    window.after(500, update_current_coords)
 
 
 def update_drone_1_IP():
@@ -636,6 +533,8 @@ def setup():
     t1.start()
     t2 = threading.Thread(target=telemetry_local_position_thread, args=(drone1,drone2))
     t2.start()
+    t3 = threading.Thread(target=flight_loop_thread, args=())
+    t3.start()
 
 
 def establish_connection(number, IP, UDP):
@@ -751,7 +650,7 @@ def takeoff_CUSTOM(the_connection, alt):
     # alt: float, target altitude [input]
     ################################################
 
-    global TARGET_X
+    global TARGET_X_1
     global TARGET_Y
     global TARGET_Z
 
@@ -767,7 +666,7 @@ def takeoff_CUSTOM(the_connection, alt):
         z = msg["z"]
 
         # Set initial target
-        TARGET_X = x
+        TARGET_X_1 = x
         TARGET_Y = y
         TARGET_Z = alt
 
@@ -787,6 +686,34 @@ def land(the_connection):
     # Wait for acknowledge
     # msg = the_connection.recv_match(type='COMMAND<ACK', blocking=True)
     # print(msg)
+
+
+def offboard(the_connection):
+
+    ################################################
+    # the_connection: mavlink connection [input]
+    # mode: int, id of the desired px4 mode [input]
+    ################################################
+
+    # master.mav.command_long_send( master.target_system, master.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0, 0, mode_id, 0, 0, 0, 0, 0)
+
+    if (the_connection):
+        the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0, 209, 6, 0, 0, 0, 0, 0)
+
+    # while True:
+    #     # Wait for ACK command
+    #     # Would be good to add mechanism to avoid endlessly blocking
+    #     # if the autopilot sends a NACK or never receives the message
+    #     ack_msg = the_connection.recv_match(type='COMMAND_ACK', blocking=True)
+    #     ack_msg = ack_msg.to_dict()
+
+    #     # Continue waiting if the acknowledged command is not `set_mode`
+    #     if ack_msg['command'] != mavutil.mavlink.MAV_CMD_DO_SET_MODE:
+    #         continue
+
+    #     # Print the ACK result !
+    #     print(mavutil.mavlink.enums['MAV_RESULT'][ack_msg['result']].description)
+    #     break
 
 
 def update_target_ned(the_connection, x_val, y_val, z_val):
@@ -899,34 +826,140 @@ def telemetry_local_position_thread(the_connection_1, the_connection_2):
                 CURRENT_Z_2 = msg.z
             except:
                 print("Problem receiving LOCAL_POSITION_NED Mav message: 2.")
-    
 
-def offboard(the_connection):
 
+def flight_loop_thread():
     ################################################
-    # the_connection: mavlink connection [input]
-    # mode: int, id of the desired px4 mode [input]
+    # [no inputs or outputs]
     ################################################
 
-    # master.mav.command_long_send( master.target_system, master.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0, 0, mode_id, 0, 0, 0, 0, 0)
+    global TARGET_X_1
+    global TARGET_Y_1
+    global TARGET_Z_1
+    global TARGET_X_2
+    global TARGET_Y_2
+    global TARGET_Z_2
+    global SEND_TELEMETRY
 
-    
-    the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_DO_SET_MODE, 0, 209, 6, 0, 0, 0, 0, 0)
 
-    # while True:
-    #     # Wait for ACK command
-    #     # Would be good to add mechanism to avoid endlessly blocking
-    #     # if the autopilot sends a NACK or never receives the message
-    #     ack_msg = the_connection.recv_match(type='COMMAND_ACK', blocking=True)
-    #     ack_msg = ack_msg.to_dict()
+    # Note: In order for PX4 to remain in offboard mode, it needs to receive target commands
+    # at a rate of at least 2 Hz.
 
-    #     # Continue waiting if the acknowledged command is not `set_mode`
-    #     if ack_msg['command'] != mavutil.mavlink.MAV_CMD_DO_SET_MODE:
-    #         continue
+    ############################################################
+    # NAVIGATION                                               #
+    ############################################################
 
-    #     # Print the ACK result !
-    #     print(mavutil.mavlink.enums['MAV_RESULT'][ack_msg['result']].description)
-    #     break
+    while 1:
+
+        # TEST MODE
+        if (FLIGHT_MODE == 0):
+            # Test mode
+            TARGET_X_1 = TEST_MODE_X
+            TARGET_Y_1 = TEST_MODE_Y
+            TARGET_Z_1 = TEST_MODE_Z
+
+        # MANUAL MODE
+        elif (FLIGHT_MODE == 1):
+            try:
+                TARGET_X_1, TARGET_Y_1, TARGET_Z_1 = input("Enter target x y z: ").split()
+            except:
+                print("Error reading input coordinates.")
+            finally:
+                print("Going to: " + str(TARGET_X_1) + ", " + str(TARGET_Y_1) + ", " + str(TARGET_Z_1))
+
+        # AUTONOMOUS MODE
+        elif (FLIGHT_MODE == 2):
+            TARGET_X_2 = CURRENT_X_1
+            TARGET_Y_2 = CURRENT_Y_1
+            TARGET_Z_2 = CURRENT_Z_1
+
+        # DEMO MODE
+        elif (FLIGHT_MODE == 3 and drone1 and drone2):
+
+            TARGET_X_1 = 0
+            TARGET_Y_1 = 0
+            TARGET_Z_1 = -1
+            time.sleep(15)
+
+            TARGET_X_1 = 1
+            TARGET_Y_1 = 1
+            TARGET_Z_1 = -1
+            time.sleep(8)
+            # while( (x - TARGET_X_1) > .1 and (y - TARGET_Y_1) > 0.1 ):
+                # msg = drone1.messages['LOCAL_POSITION_NED']
+                # x = msg.x
+                # y = msg.y
+                # z = msg.z
+            land(drone1)
+            time.sleep(5)
+            takeoff_CUSTOM(drone1, 1)
+            time.sleep(5)
+
+            TARGET_X_1 = -1
+            TARGET_Y_1 = 1
+            TARGET_Z_1 = -1
+            time.sleep(8)
+            # while( (x - TARGET_X_1) > .1 and (y - TARGET_Y_1) > 0.1 ):
+                # msg = drone1.messages['LOCAL_POSITION_NED']
+                # x = msg.x
+                # y = msg.y
+                # z = msg.z
+            land(drone1)
+            time.sleep(5)
+            takeoff_CUSTOM(drone1, 1)
+            time.sleep(5)
+
+            TARGET_X_1 = -1
+            TARGET_Y_1 = -1
+            TARGET_Z_1 = -1
+            time.sleep(8)
+            # while( (x - TARGET_X_1) > .1 and (y - TARGET_Y_1) > 0.1 ):
+                # msg = drone1.messages['LOCAL_POSITION_NED']
+                # x = msg.x
+                # y = msg.y
+                # z = msg.z
+            land(drone1)
+            time.sleep(5)
+            takeoff_CUSTOM(drone1, 1)
+            time.sleep(5)
+
+            TARGET_X_1 = 1
+            TARGET_Y_1 = -1
+            TARGET_Z_1 = -1
+            time.sleep(8)
+            # while( (x - TARGET_X_1) > .1 and (y - TARGET_Y_1) > 0.1 ):
+                # msg = drone1.messages['LOCAL_POSITION_NED']
+                # x = msg.x
+                # y = msg.y
+                # z = msg.z
+            land(drone1)
+            time.sleep(5)
+            takeoff_CUSTOM(drone1, 1)
+            time.sleep(5)
+
+            TARGET_X_1 = 0
+            TARGET_Y_1 = 0
+            TARGET_Z_1 = -1
+            time.sleep(8)
+            # while( (x - TARGET_X_1) > .1 and (y - TARGET_Y_1) > 0.1 ):
+                # msg = drone1.messages['LOCAL_POSITION_NED']
+                # x = msg.x
+                # y = msg.y
+                # z = msg.z
+            land(drone1)
+
+        # OFF
+        elif(FLIGHT_MODE == 4):
+            if drone1:
+                disarm(drone1)
+            if drone2:
+                disarm(drone2)
+
+        else:
+            print("FLIGHT MODE NOT RECOGNIZED OR DRONES NOT CONNECTED.")
+            return
+            
+    return 0
 
 
 ###################################################################################################
