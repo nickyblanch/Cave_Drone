@@ -1,0 +1,175 @@
+################################################################################
+# Hardware-Specific Configuration for ModalAI uSeeker V1 with PX4 1.11
+# requires ModalAI ESC connected via UART and loaded with uSeeker ESC params
+#
+# This is NOT a complete set of PX4 parameters. These are non-default parameters
+# specific to the airframe and are meant to be loaded over the defaults.
+################################################################################
+
+################################################################################
+# quadcopter X type with no safety switch
+# board upright for voxlcam
+################################################################################
+1	1	SYS_AUTOSTART	4001	6
+1	1	MAV_TYPE	2	6
+1	1	CBRK_IO_SAFETY	22027	6
+
+# NOTE SENS_BOARD_ROT changed from 1.10 to 1.11
+1	1	SENS_BOARD_ROT	36	6
+1	1	CAL_MAG0_ROT	0	6
+
+# allow arming with weaker GPS signal
+1	1	EKF2_REQ_SACC	1.0	9
+
+################################################################################
+# Battery Config
+# resistance is per cell!! not total series resistance
+# this is for a Sony 3S 18650 VTC6 pack
+################################################################################
+
+1	1	BAT1_N_CELLS	3	6
+1	1	BAT1_R_INTERNAL	0.020	9
+1	1	BAT1_CAPACITY	3000	9
+
+1	1	BAT1_V_CHARGED	4.10	9
+1	1	BAT1_V_EMPTY	3.00	9
+
+1	1	BAT_LOW_THR	0.15	9
+1	1	BAT_CRIT_THR	0.10	9
+1	1	BAT_EMERGEN_THR	0.05	9
+
+
+################################################################################
+# Motors/ESCs
+################################################################################
+# disable dshot, use uart instead
+1	1	DSHOT_CONFIG	0	6
+1	1	DSHOT_TEL_CFG	0	6
+
+# disable bat scaling with our own RPM controlled ESCs!
+1	1	MC_BAT_SCALE_EN	0	6
+
+
+# UART ESC for uSeeker on 1.11
+1	1	UART_ESC_BAUD	250000	6
+1	1	UART_ESC_CONFIG	1	6
+1	1	UART_ESC_MOTOR1	3	6
+1	1	UART_ESC_MOTOR2	2	6
+1	1	UART_ESC_MOTOR3	4	6
+1	1	UART_ESC_MOTOR4	1	6
+1	1	UART_ESC_RPM_MAX	10500	6
+1	1	UART_ESC_RPM_MIN	1000	6
+
+# Dyno test shows this model should be 0.90
+1	1	THR_MDL_FAC	0.90	9
+
+# tuned for 10.5k rpm max esc setting
+1	1	MPC_THR_HOVER	0.48	9
+
+
+################################################################################
+# IMU position config, voxl-vision-px4 handles VIO position offset, not px4
+################################################################################
+1	1	EKF2_IMU_POS_X	0.0427	9
+1	1	EKF2_IMU_POS_Y	0.0223	9
+1	1	EKF2_IMU_POS_Z	-0.0177	9
+1	1	EKF2_EV_POS_X	0.0	9
+1	1	EKF2_EV_POS_Y	0.0	9
+1	1	EKF2_EV_POS_Z	0.0	9
+
+
+################################################################################
+# Noise management
+################################################################################
+1	1	MOT_SLEW_MAX	0.0	9
+1	1	IMU_DGYRO_CUTOFF	80.0	9
+1	1	IMU_ACCEL_CUTOFF	60.0	9
+1	1	IMU_GYRO_CUTOFF	80.0	9
+
+# Time constant (s) of the position output prediction and smoothing filter.
+# Controls how tightly the output track the EKF states
+1	1	EKF2_TAU_POS	0.25	9
+1	1	EKF2_TAU_VEL	0.25	9
+
+# Low pass filter cut freq (hz) for numerical velocity derivative
+1	1	MPC_VELD_LP	5.0	9
+
+
+################################################################################
+# Attitude PID
+################################################################################
+
+# disable airmode, it make the system unpredictable when touching the ground
+1	1	MC_AIRMODE	0	6
+
+# Pitch PID
+1	1	MC_PITCH_P	10.0	9
+1	1	MC_PITCHRATE_P	0.08	9
+1	1	MC_PITCHRATE_I	0.50	9
+1	1	MC_PITCHRATE_D	0.0	9
+1	1	MC_PITCHRATE_K	1.0	9
+
+# Roll PID
+1	1	MC_ROLL_P	10.0	9
+1	1	MC_ROLLRATE_P	0.07	9
+1	1	MC_ROLLRATE_I	0.50	9
+1	1	MC_ROLLRATE_D	0.0	9
+1	1	MC_ROLLRATE_K	1.0	9
+
+# Yaw PID
+1	1	MC_YAW_P	2.0	9
+1	1	MC_YAWRATE_P	0.06	9
+1	1	MC_YAWRATE_I	0.5	9
+1	1	MC_YAWRATE_D	0.0	9
+1	1	MC_YAWRATE_K	1.0	9
+
+
+################################################################################
+# Position Control
+################################################################################
+
+# tweak MPC_THR_MIN to prevent roll/pitch losing control
+# authority under rapid downward acceleration
+1	1	MPC_THR_MAX	0.70	9
+1	1	MPC_THR_MIN	0.15	9
+1	1	MPC_MANTHR_MIN	0.15	9
+
+# default position mode with a little expo, smooth mode is terrible
+1	1	MPC_POS_MODE	0	6
+1	1	MPC_YAW_EXPO	0.30	9
+1	1	MPC_XY_MAN_EXPO	0.30	9
+1	1	MPC_Z_MAN_EXPO	0.30	9
+
+# max velocities
+1	1	MPC_VEL_MANUAL	4.0	9
+1	1	MPC_XY_VEL_MAX	5.0	9
+1	1	MPC_XY_CRUISE	5.0	9
+1	1	MPC_Z_VEL_MAX_DN	1.5	9
+1	1	MPC_Z_VEL_MAX_UP	3.0	9
+1	1	MPC_ACC_UP_MAX	4.0	9
+1	1	MPC_LAND_SPEED	1.0	9
+
+# Horizontal position PID
+1	1	MPC_XY_P	1.50	9
+1	1	MPC_XY_VEL_P_ACC	4.00	9
+1	1	MPC_XY_VEL_I_ACC	0.10	9
+1	1	MPC_XY_VEL_D_ACC	0.00	9
+
+# Vertical position PID
+1	1	MPC_Z_P	1.0	9
+1	1	MPC_Z_VEL_P_ACC	8.0	9
+1	1	MPC_Z_VEL_I_ACC	2.0	9
+1	1	MPC_Z_VEL_D_ACC	0.0	9
+
+
+################################################################################
+# takeoff and land params
+################################################################################
+1	1	MPC_TKO_RAMP_T	1.50	9
+1	1	MPC_TKO_SPEED	1.50	9
+1	1	MPC_SPOOLUP_TIME	0.0	9
+
+# disable rotation check on landing
+1	1	LNDMC_ROT_MAX	500.0	9
+1	1	COM_DISARM_LAND	0.1	9
+
