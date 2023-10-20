@@ -90,9 +90,14 @@ CURRENT_X_2 = 0             # current x coordinate
 CURRENT_Y_2 = 0             # current y coordinate
 CURRENT_Z_2 = 0             # current z coordinate
 
-drone_1_IP = "127.0.0.1"    # IP address of Drone 1
+PREV_LEADER_X = 0           # Previous leader waypoint (x)
+PREV_LEADER_Y = 0           # Previous leader waypoint (y)
+PREV_LEADER_Z = 0           # Previous leader waypoint (z)
+waypoints = []              # List of waypoints for follower; acts as FIFO
+
+drone_1_IP = "192.168.8.15" # IP address of Drone 1
 drone_2_IP = "192.168.1.2"  # IP address of Drone 2
-drone_1_UDP = 14552         # UDP port of Drone 1
+drone_1_UDP = 14550         # UDP port of Drone 1
 drone_2_UDP = 1             # UDP port of Drone 2
 window_width = 750          # Width of GUI window
 window_height = 450         # Length of GUI window
@@ -113,7 +118,6 @@ def main():
     setup_GUI()
 
     # Setup
-    setup()
 
     # Window mainloop
     window.after(0, update_current_coords)
@@ -409,21 +413,21 @@ def update_current_coords():
     ################################################nr
     # [no inputs or outputs]
     ################################################
-    drone_1_x_coord.config(text=str(CURRENT_X_1))
-    drone_1_y_coord.config(text=str(CURRENT_Y_1))
-    drone_1_z_coord.config(text=str(CURRENT_Z_1))
+    drone_1_x_coord.config(text=f'{float(CURRENT_X_1):.2f}')
+    drone_1_y_coord.config(text=f'{float(CURRENT_Y_1):.2f}')
+    drone_1_z_coord.config(text=f'{float(CURRENT_Z_1):.2f}')
 
-    drone_2_x_coord.config(text=str(CURRENT_X_2))
-    drone_2_y_coord.config(text=str(CURRENT_Y_2))
-    drone_2_z_coord.config(text=str(CURRENT_Z_2))
+    drone_2_x_coord.config(text=f'{float(CURRENT_X_2):.2f}')
+    drone_2_y_coord.config(text=f'{float(CURRENT_Y_2):.2f}')
+    drone_2_z_coord.config(text=f'{float(CURRENT_Z_2):.2f}')
 
-    drone_1_x_target.config(text=str(TARGET_X_1))
-    drone_1_y_target.config(text=str(TARGET_Y_1))
-    drone_1_z_target.config(text=str(TARGET_Z_1))
+    drone_1_x_target.config(text=f'{float(TARGET_X_1):.2f}')
+    drone_1_y_target.config(text=f'{float(TARGET_Y_1):.2f}')
+    drone_1_z_target.config(text=f'{float(TARGET_Z_1):.2f}')
 
-    drone_2_x_target.config(text=str(TARGET_X_2))
-    drone_2_y_target.config(text=str(TARGET_Y_2))
-    drone_2_z_target.config(text=str(TARGET_Z_2))
+    drone_2_x_target.config(text=f'{float(TARGET_X_2):.2f}')
+    drone_2_y_target.config(text=f'{float(TARGET_Y_2):.2f}')
+    drone_2_z_target.config(text=f'{float(TARGET_Z_2):.2f}')
 
     window.after(500, update_current_coords)
 
@@ -448,8 +452,8 @@ def update_drone_1_IP():
     if temp != "":
         drone_1_UDP = temp
 
-    establish_connection(1, drone_1_IP, drone_1_UDP)
     print(str(drone_1_IP) + ":" + str(drone_1_UDP))
+    establish_connection(1, drone_1_IP, drone_1_UDP)
 
 
 def update_drone_2_IP():
@@ -472,8 +476,8 @@ def update_drone_2_IP():
     if temp != "":
         drone_2_UDP = temp
         
-    establish_connection(2, drone_2_IP, drone_2_UDP)
     print(str(drone_2_IP) + ":" + str(drone_2_UDP))
+    establish_connection(2, drone_2_IP, drone_2_UDP)
 
 
 def update_flight_mode(number, mode):
@@ -488,7 +492,8 @@ def update_flight_mode(number, mode):
         FLIGHT_MODE = mode
 
         if(mode in (0, 1, 2, 3)):
-           offboard(drone1)
+           # offboard(drone1)
+           pass
 
     if number == 2:
         pass
@@ -556,7 +561,7 @@ def establish_connection(number, IP, UDP):
 
     if number == 1:
         # Start a connection listening on a UDP port
-        drone1 = mavutil.mavlink_connection('udp:' + str(IP) + ':' + str(UDP))
+        drone1 = mavutil.mavlink_connection('udpin:' + str(IP) + ':' + str(UDP))
 
         # Wait for the first heartbeat 
         drone1.wait_heartbeat()
@@ -567,10 +572,10 @@ def establish_connection(number, IP, UDP):
         request_target_pos_NED(drone1)
 
         # # Initialize current position
-        # msg = drone1.recv_match(type='LOCAL_POSITION_NED', blocking=True).to_dict()
-        # CURRENT_X_1 = msg["x"]
-        # CURRENT_Y_1 = msg["y"]
-        # CURRENT_Z_1= msg["z"]
+        msg = drone1.recv_match(type='LOCAL_POSITION_NED', blocking=True).to_dict()
+        CURRENT_X_1 = msg["x"]
+        CURRENT_Y_1 = msg["y"]
+        CURRENT_Z_1= msg["z"]
 
 
     elif number == 2:
@@ -592,7 +597,13 @@ def establish_connection(number, IP, UDP):
         CURRENT_Z_2= msg["z"]
 
     # Re-do telemetry thread
-    setup()
+    # Begin our telemtry thread
+    t1 = threading.Thread(target=telemetry_loop_thread, args=(drone1,drone2))
+    t1.start()
+    t2 = threading.Thread(target=telemetry_local_position_thread, args=(drone1,drone2))
+    t2.start()
+    t3 = threading.Thread(target=flight_loop_thread, args=())
+    t3.start()
 
 
 def arm(the_connection):
@@ -740,8 +751,8 @@ def update_target_ned(the_connection, x_val, y_val, z_val):
                     mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_IGNORE |
                     mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_RATE_IGNORE), x=float(x_val), y=float(y_val), z=float(z_val), vx=0, vy=0, vz=0, afx=0, afy=0, afz=0, yaw=0, yaw_rate=0)
 
-    if (FLIGHT_MODE != 1):
-        print("TARGET: [" + str(x_val) + ", " + str(y_val) + ", " + str(z_val) + "]")
+    # if (FLIGHT_MODE != 1):
+    #     print("TARGET: [" + str(x_val) + ", " + str(y_val) + ", " + str(z_val) + "]")
 
 
 def request_local_NED(the_connection):
@@ -809,13 +820,18 @@ def telemetry_local_position_thread(the_connection_1, the_connection_2):
     global CURRENT_Y_2
     global CURRENT_Z_2
 
+    request_local_NED(the_connection_1)
+    request_target_pos_NED(the_connection_1)
+
     while 1:
         if the_connection_1:
             try:
-                msg = the_connection_1.messages['LOCAL_POSITION_NED']
+                # msg = the_connection_1.messages['LOCAL_POSITION_NED']
+                msg = the_connection_1.recv_match(type='LOCAL_POSITION_NED', blocking=True)
                 CURRENT_X_1 = msg.x
                 CURRENT_Y_1 = msg.y
                 CURRENT_Z_1 = msg.z
+                print(str(msg.x) + " " + str(msg.y) + " " + str(msg.z))
             except:
                 print("Problem receiving LOCAL_POSITION_NED Mav message: 1.")
         if the_connection_2:
@@ -839,6 +855,9 @@ def flight_loop_thread():
     global TARGET_X_2
     global TARGET_Y_2
     global TARGET_Z_2
+    global PREV_LEADER_X
+    global PREV_LEADER_Y
+    global PREV_LEADER_Z
     global SEND_TELEMETRY
 
 
@@ -869,9 +888,28 @@ def flight_loop_thread():
 
         # AUTONOMOUS MODE
         elif (FLIGHT_MODE == 2):
-            TARGET_X_2 = CURRENT_X_1
-            TARGET_Y_2 = CURRENT_Y_1
-            TARGET_Z_2 = CURRENT_Z_1
+
+            # Set follower wayponint
+            if len(waypoints) > 0:
+                TARGET_X_2 = (waypoints[0])[0]
+                TARGET_Y_2 = (waypoints[0])[1]
+                TARGET_Z_2 = (waypoints[0])[2]
+
+            # If follower has reached the waypoint, go to next waypoint
+            if ((CURRENT_X_2 - TARGET_X_2)**2 + (CURRENT_Y_2 - TARGET_Y_2)**2 + (CURRENT_Z_2 - TARGET_Z_2)**2)**.5 < 0.1:
+                if len(waypoints) > 0:
+                    waypoints.remove(0)
+                    print("Reached waypoint: " + str(TARGET_X_2) + " " + str(TARGET_Y_2) + " " + str(TARGET_Z_2))
+
+            # If leader has traveled more than 1 meter, add a new waypoint
+            if ((CURRENT_X_1 - PREV_LEADER_X)**2 + (CURRENT_Y_1 - PREV_LEADER_Y)**2 + (CURRENT_Z_1 - PREV_LEADER_Z)**2)**.5 > 1:
+                waypoints.append((CURRENT_X_1, CURRENT_Y_1, CURRENT_Z_1))
+                PREV_LEADER_X = CURRENT_X_1
+                PREV_LEADER_Y = CURRENT_Y_1
+                PREV_LEADER_Z = CURRENT_Z_1
+
+                print("New waypoint: " + str(CURRENT_X_1) + " " + str(CURRENT_Y_1) + " " + str(CURRENT_Z_1))
+            
 
         # DEMO MODE
         elif (FLIGHT_MODE == 3 and drone1 and drone2):
@@ -958,6 +996,9 @@ def flight_loop_thread():
         else:
             print("FLIGHT MODE NOT RECOGNIZED OR DRONES NOT CONNECTED.")
             return
+        
+        # DEBUG
+        # print("CURRENT POSITION: " + str(CURRENT_X_1) + " " + str(CURRENT_Y_1) + " " + str(CURRENT_Z_1))
             
     return 0
 
