@@ -228,37 +228,37 @@ def setup_GUI():
     bottom_frame.columnconfigure(5, weight=1)
     bottom_frame.rowconfigure(0, weight=1)
 
-    # TODO: Set backgrounds
+    # Set backgrounds
     cwd = os.getcwd()
-    mars_top = PhotoImage(file = cwd+"\Follower\Python\GUI_Images\mars_top.png", master=window)
+    mars_top = PhotoImage(file = cwd+"/Follower/Python/GUI_Images/mars_top.png", master=window)
     background_label_top = Label(top_frame, image=mars_top)
     background_label_top.img = mars_top
     background_label_top.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_left = PhotoImage(file = cwd+"\Follower\Python\GUI_Images\mars_left.png", master=window)
+    mars_left = PhotoImage(file = cwd+"/Follower/Python/GUI_Images/mars_left.png", master=window)
     background_label_left = Label(left_frame, image=mars_left)
     background_label_left.img = mars_left
     background_label_left.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_left_bottom = PhotoImage(file = cwd+"\Follower\Python\GUI_Images\mars_left_bottom.png", master=window)
+    mars_left_bottom = PhotoImage(file = cwd+"/Follower/Python/GUI_Images/mars_left_bottom.png", master=window)
     background_label_left_bottom = Label(left_frame_bottom, image=mars_left_bottom)
     background_label_left_bottom.img = mars_left_bottom
     background_label_left_bottom.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_left_bottom_coords = PhotoImage(file = cwd+"\Follower\Python\GUI_Images\mars_left_bottom_coords.png", master=window)
+    mars_left_bottom_coords = PhotoImage(file = cwd+"/Follower/Python/GUI_Images/mars_left_bottom_coords.png", master=window)
     background_label_left_bottom_coords = Label(left_frame_bottom_coords, image=mars_left_bottom_coords)
     background_label_left_bottom_coords.img = mars_left_bottom_coords
     background_label_left_bottom_coords.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_right = PhotoImage(file = cwd+"\Follower\Python\GUI_Images\mars_right.png", master=window)
+    mars_right = PhotoImage(file = cwd+"/Follower/Python/GUI_Images/mars_right.png", master=window)
     background_label_right = Label(right_frame, image=mars_right)
     background_label_right.img = mars_right
     background_label_right.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_right_bottom = PhotoImage(file =cwd+"\Follower\Python\GUI_Images\mars_right_bottom.png", master=window)
+    mars_right_bottom = PhotoImage(file =cwd+"/Follower/Python/GUI_Images/mars_right_bottom.png", master=window)
     background_label_right_bottom = Label(right_frame_bottom, image=mars_right_bottom)
     background_label_right_bottom.img = mars_right_bottom
     background_label_right_bottom.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_right_bottom_coords = PhotoImage(file = cwd+"\Follower\Python\GUI_Images\mars_right_bottom_coords.png", master=window)
+    mars_right_bottom_coords = PhotoImage(file = cwd+"/Follower/Python/GUI_Images/mars_right_bottom_coords.png", master=window)
     background_label_right_bottom_coords = Label(right_frame_bottom_coords, image=mars_right_bottom_coords)
     background_label_right_bottom_coords.img = mars_right_bottom_coords
     background_label_right_bottom_coords.place(x=0, y=0, relwidth=1, relheight=1)
-    mars_bottom = PhotoImage(file = cwd+"\Follower\Python\GUI_Images\mars_bottom.png", master=window)
+    mars_bottom = PhotoImage(file = cwd+"/Follower/Python/GUI_Images/mars_bottom.png", master=window)
     background_label_bottom = Label(bottom_frame, image=mars_bottom)
     background_label_bottom.img = mars_bottom
     background_label_bottom.place(x=0, y=0, relwidth=1, relheight=1)
@@ -286,7 +286,7 @@ def setup_GUI():
     drone_2_UDP_entry.grid(row=1, column=1, pady=10, sticky='w')
 
     # IP Buttons
-    photo = PhotoImage(file = r"C:\Users\nicky\OneDrive\Pictures\wifi_small.png")
+    photo = PhotoImage(file = cwd+"/Follower/Python/GUI_Images/wifi_small.png")
 
     drone_1_IP_button = Button(left_frame, image=photo, command=update_drone_1_IP)
     drone_1_IP_button.image = photo
