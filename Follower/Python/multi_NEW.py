@@ -492,11 +492,20 @@ def update_flight_mode(number, mode):
         FLIGHT_MODE = mode
 
         if(mode in (0, 1, 2, 3)):
-           # offboard(drone1)
+           offboard(drone1)
            pass
 
     if number == 2:
-        pass
+        offboard(drone1)
+        offboard(drone2)
+
+    # Begin our telemtry thread
+    t1 = threading.Thread(target=telemetry_loop_thread, args=(drone1,drone2))
+    t1.start()
+    t2 = threading.Thread(target=telemetry_local_position_thread, args=(drone1,drone2))
+    t2.start()
+    t3 = threading.Thread(target=flight_loop_thread, args=())
+    t3.start()
 
 
 def update_coords_drone_1():
@@ -596,14 +605,6 @@ def establish_connection(number, IP, UDP):
         CURRENT_Y_2 = msg["y"]
         CURRENT_Z_2= msg["z"]
 
-    # Re-do telemetry thread
-    # Begin our telemtry thread
-    t1 = threading.Thread(target=telemetry_loop_thread, args=(drone1,drone2))
-    t1.start()
-    t2 = threading.Thread(target=telemetry_local_position_thread, args=(drone1,drone2))
-    t2.start()
-    t3 = threading.Thread(target=flight_loop_thread, args=())
-    t3.start()
 
 
 def arm(the_connection):
@@ -796,9 +797,12 @@ def telemetry_loop_thread(the_connection_1, the_connection_2):
         # print("TARGET: " + str(TARGET_X_1)) #DEBUG
 
         if the_connection_1:
-            update_target_ned(the_connection_1, TARGET_X_1, TARGET_Y_1, TARGET_Z_1)
+            update_target_ned(the_connection_1, float(TARGET_X_1), float(TARGET_Y_1), float(TARGET_Z_1))
+            # print('TARGET: ' + str(TARGET_X_1) + ' ' + str(TARGET_Y_1) + ' ' + str(TARGET_Z_1))
         if the_connection_2:
             update_target_ned(the_connection_2, TARGET_X_2, TARGET_Y_2, TARGET_Z_2)
+            # print('TARGET 2: ' + str(TARGET_X_2) + ' ' + str(TARGET_Y_2) + ' ' + str(TARGET_Z_2))
+
 
     return 0
 
@@ -831,12 +835,12 @@ def telemetry_local_position_thread(the_connection_1, the_connection_2):
                 CURRENT_X_1 = msg.x
                 CURRENT_Y_1 = msg.y
                 CURRENT_Z_1 = msg.z
-                print(str(msg.x) + " " + str(msg.y) + " " + str(msg.z))
+                # print(str(msg.x) + " " + str(msg.y) + " " + str(msg.z))
             except:
                 print("Problem receiving LOCAL_POSITION_NED Mav message: 1.")
         if the_connection_2:
             try:
-                msg = the_connection_2.messages['LOCAL_POSITION_NED']
+                msg = the_connection_2.recv_match(type='LOCAL_POSITION_NED', blocking=True)
                 CURRENT_X_2 = msg.x
                 CURRENT_Y_2 = msg.y
                 CURRENT_Z_2 = msg.z
@@ -860,6 +864,7 @@ def flight_loop_thread():
     global PREV_LEADER_Z
     global SEND_TELEMETRY
 
+    waypoint_location = 0
 
     # Note: In order for PX4 to remain in offboard mode, it needs to receive target commands
     # at a rate of at least 2 Hz.
@@ -879,30 +884,29 @@ def flight_loop_thread():
 
         # MANUAL MODE
         elif (FLIGHT_MODE == 1):
-            try:
-                TARGET_X_1, TARGET_Y_1, TARGET_Z_1 = input("Enter target x y z: ").split()
-            except:
-                print("Error reading input coordinates.")
-            finally:
-                print("Going to: " + str(TARGET_X_1) + ", " + str(TARGET_Y_1) + ", " + str(TARGET_Z_1))
+            pass
 
         # AUTONOMOUS MODE
         elif (FLIGHT_MODE == 2):
 
-            # Set follower wayponint
-            if len(waypoints) > 0:
-                TARGET_X_2 = (waypoints[0])[0]
-                TARGET_Y_2 = (waypoints[0])[1]
-                TARGET_Z_2 = (waypoints[0])[2]
+            # If we're just starting
+            if (waypoint_location == 0):
+                if (len(waypoints) > 0):
+                    TARGET_X_2 = (waypoints[0])[0]
+                    TARGET_Y_2 = (waypoints[0])[1]
+                    TARGET_Z_2 = (waypoints[0])[2]
 
             # If follower has reached the waypoint, go to next waypoint
-            if ((CURRENT_X_2 - TARGET_X_2)**2 + (CURRENT_Y_2 - TARGET_Y_2)**2 + (CURRENT_Z_2 - TARGET_Z_2)**2)**.5 < 0.1:
-                if len(waypoints) > 0:
-                    waypoints.remove(0)
-                    print("Reached waypoint: " + str(TARGET_X_2) + " " + str(TARGET_Y_2) + " " + str(TARGET_Z_2))
+            if ((CURRENT_X_2 - TARGET_X_2)**2 + (CURRENT_Y_2 - TARGET_Y_2)**2 + (CURRENT_Z_2 - TARGET_Z_2)**2)**.5 < 1:
+                print("Reached waypoint: " + str(TARGET_X_2) + " " + str(TARGET_Y_2) + " " + str(TARGET_Z_2))
+                waypoint_location = waypoint_location + 1
+                if (len(waypoints) > waypoint_location):
+                    TARGET_X_2 = (waypoints[waypoint_location])[0]
+                    TARGET_Y_2 = (waypoints[waypoint_location])[1]
+                    TARGET_Z_2 = (waypoints[waypoint_location])[2]
 
             # If leader has traveled more than 1 meter, add a new waypoint
-            if ((CURRENT_X_1 - PREV_LEADER_X)**2 + (CURRENT_Y_1 - PREV_LEADER_Y)**2 + (CURRENT_Z_1 - PREV_LEADER_Z)**2)**.5 > 1:
+            if ((CURRENT_X_1 - PREV_LEADER_X)**2 + (CURRENT_Y_1 - PREV_LEADER_Y)**2 + (CURRENT_Z_1 - PREV_LEADER_Z)**2)**.5 > 2:
                 waypoints.append((CURRENT_X_1, CURRENT_Y_1, CURRENT_Z_1))
                 PREV_LEADER_X = CURRENT_X_1
                 PREV_LEADER_Y = CURRENT_Y_1
