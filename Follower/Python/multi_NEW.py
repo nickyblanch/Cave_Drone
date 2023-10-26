@@ -891,22 +891,22 @@ def flight_loop_thread():
 
             # If we're just starting
             if (waypoint_location == 0):
-                if (len(waypoints) > 0):
+                if (len(waypoints) > 1):
                     TARGET_X_2 = (waypoints[0])[0]
                     TARGET_Y_2 = (waypoints[0])[1]
                     TARGET_Z_2 = (waypoints[0])[2]
 
             # If follower has reached the waypoint, go to next waypoint
-            if ((CURRENT_X_2 - TARGET_X_2)**2 + (CURRENT_Y_2 - TARGET_Y_2)**2 + (CURRENT_Z_2 - TARGET_Z_2)**2)**.5 < 1:
+            if ((CURRENT_X_2 - TARGET_X_2)**2 + (CURRENT_Y_2 - TARGET_Y_2)**2 + (CURRENT_Z_2 - TARGET_Z_2)**2)**.5 < .15:
                 print("Reached waypoint: " + str(TARGET_X_2) + " " + str(TARGET_Y_2) + " " + str(TARGET_Z_2))
                 waypoint_location = waypoint_location + 1
-                if (len(waypoints) > waypoint_location):
+                if (len(waypoints) > waypoint_location+1):
                     TARGET_X_2 = (waypoints[waypoint_location])[0]
                     TARGET_Y_2 = (waypoints[waypoint_location])[1]
                     TARGET_Z_2 = (waypoints[waypoint_location])[2]
 
             # If leader has traveled more than 1 meter, add a new waypoint
-            if ((CURRENT_X_1 - PREV_LEADER_X)**2 + (CURRENT_Y_1 - PREV_LEADER_Y)**2 + (CURRENT_Z_1 - PREV_LEADER_Z)**2)**.5 > 2:
+            if ((CURRENT_X_1 - PREV_LEADER_X)**2 + (CURRENT_Y_1 - PREV_LEADER_Y)**2 + (CURRENT_Z_1 - PREV_LEADER_Z)**2)**.5 > 1:
                 waypoints.append((CURRENT_X_1, CURRENT_Y_1, CURRENT_Z_1))
                 PREV_LEADER_X = CURRENT_X_1
                 PREV_LEADER_Y = CURRENT_Y_1
