@@ -104,9 +104,9 @@ waypoints = []              # List of waypoints for follower; acts as FIFO
 drone_1_IP = "127.0.0.1"    # IP address of Drone 1
 drone_2_IP = "127.0.0.1"    # IP address of Drone 2
 drone_3_IP = "127.0.0.1"    # IP address of Drone 3
-drone_1_UDP = 14541         # UDP port of Drone 1
-drone_2_UDP = 14542         # UDP port of Drone 2
-drone_3_UDP = 14543         # UDP port of Drone 2
+drone_1_UDP = 14540         # UDP port of Drone 1
+drone_2_UDP = 14541         # UDP port of Drone 2
+drone_3_UDP = 14542         # UDP port of Drone 2
 
 window_width = 1125         # Width of GUI window
 window_height = 450         # Length of GUI window
@@ -629,17 +629,20 @@ def update_flight_mode(number, mode):
     ################################################
 
     global FLIGHT_MODE
+    global waypoints
 
-    if number == 1:
-        FLIGHT_MODE = mode
+    
+    FLIGHT_MODE = mode
+    print("Flight Mode Updated: " + str(mode))
 
-        if(mode in (0, 1, 2, 3)):
-           offboard(drone1)
-           pass
-
-    if number != 2:
+    if drone1:
         offboard(drone1)
+    if drone2:
         offboard(drone2)
+    if drone3:
+        offboard(drone3)
+
+    waypoints = []
 
 
 def update_coords_drone_1():
@@ -859,24 +862,22 @@ def takeoff_CUSTOM(the_connection, alt, num):
         msg = the_connection.recv_match(type='LOCAL_POSITION_NED', blocking=True).to_dict()
         x = msg["x"]
         y = msg["y"]
-        z = msg["z"]
 
-    if num == 1:
-        # Set initial target
-        TARGET_X_1 = x
-        TARGET_Y_1 = y
-        TARGET_Z_1 = alt
-    if num == 2:
-        # Set initial target
-        TARGET_X_2 = x
-        TARGET_Y_2 = y
-        TARGET_Z_2 = alt
-    if num == 1:
-        # Set initial target
-        TARGET_X_2 = x
-        TARGET_Y_2 = y
-        TARGET_Z_2 = alt
-
+        if num == 1:
+            # Set initial target
+            TARGET_X_1 = x
+            TARGET_Y_1 = y
+            TARGET_Z_1 = alt
+        if num == 2:
+            # Set initial target
+            TARGET_X_2 = x
+            TARGET_Y_2 = y
+            TARGET_Z_2 = alt
+        if num == 3:
+            # Set initial target
+            TARGET_X_3 = x
+            TARGET_Y_3 = y
+            TARGET_Z_3 = alt
 
         offboard(the_connection)
 
@@ -999,10 +1000,10 @@ def telemetry_loop_thread(the_connection_1, the_connection_2, the_connection_3):
             update_target_ned(the_connection_1, float(TARGET_X_1), float(TARGET_Y_1), float(TARGET_Z_1))
             # print('TARGET: ' + str(TARGET_X_1) + ' ' + str(TARGET_Y_1) + ' ' + str(TARGET_Z_1))
         if the_connection_2:
-            update_target_ned(the_connection_2, TARGET_X_2, TARGET_Y_2, TARGET_Z_2)
+            update_target_ned(the_connection_2, float(TARGET_X_2), float(TARGET_Y_2), float(TARGET_Z_2))
             # print('TARGET 2: ' + str(TARGET_X_2) + ' ' + str(TARGET_Y_2) + ' ' + str(TARGET_Z_2))
         if the_connection_3:
-            update_target_ned(the_connection_3, TARGET_X_3, TARGET_Y_3, TARGET_Z_3)
+            update_target_ned(the_connection_3, float(TARGET_X_3), float(TARGET_Y_3), float(TARGET_Z_3))
             # print('TARGET 3: ' + str(TARGET_X_3) + ' ' + str(TARGET_Y_3) + ' ' + str(TARGET_Z_3))
 
 
@@ -1112,19 +1113,19 @@ def flight_loop_thread():
                 TARGET_Y_2 = (waypoints[waypoint_location_2])[1]
                 TARGET_Z_2 = (waypoints[waypoint_location_2])[2]
 
-            if (len(waypoints) > 2):
+            if (waypoint_location_2 > 0):
                 TARGET_X_3 = (waypoints[waypoint_location_3])[0]
                 TARGET_Y_3 = (waypoints[waypoint_location_3])[1]
                 TARGET_Z_3 = (waypoints[waypoint_location_3])[2]
 
             # If follower has reached the waypoint, go to next waypoint
             if ((float(CURRENT_X_2) - float(TARGET_X_2))**2 + (float(CURRENT_Y_2) - float(TARGET_Y_2))**2 + (float(CURRENT_Z_2) - float(TARGET_Z_2))**2)**.5 < .3:
-                if (len(waypoints) > waypoint_location_2+1):
-                    print("[2] Reached waypoint: " + str(TARGET_X_2) + " " + str(TARGET_Y_2) + " " + str(TARGET_Z_2))
+                if (len(waypoints) > waypoint_location_2+2):
+                    print("[2] Reached waypoint " + str(waypoint_location_2) + ": " + str(TARGET_X_2) + " " + str(TARGET_Y_2) + " " + str(TARGET_Z_2))
                     waypoint_location_2 = waypoint_location_2 + 1
             if ((float(CURRENT_X_3) - float(TARGET_X_3))**2 + (float(CURRENT_Y_3) - float(TARGET_Y_3))**2 + (float(CURRENT_Z_3) - float(TARGET_Z_3))**2)**.5 < .3:
                 if (waypoint_location_2 > waypoint_location_3+1):
-                    print("[3] Reached waypoint: " + str(TARGET_X_3) + " " + str(TARGET_Y_3) + " " + str(TARGET_Z_3))
+                    print("[3] Reached waypoint " + str(waypoint_location_3) + ": " + str(TARGET_X_3) + " " + str(TARGET_Y_3) + " " + str(TARGET_Z_3))
                     waypoint_location_3 = waypoint_location_3 + 1
 
             # If leader has traveled more than 1 meter, add a new waypoint
@@ -1133,7 +1134,7 @@ def flight_loop_thread():
                 PREV_LEADER_X = CURRENT_X_1
                 PREV_LEADER_Y = CURRENT_Y_1
                 PREV_LEADER_Z = CURRENT_Z_1
-                print("New waypoint: " + str(CURRENT_X_1) + " " + str(CURRENT_Y_1) + " " + str(CURRENT_Z_1))
+                print("New waypoint + " + str(len(waypoints)) + ": " + str(CURRENT_X_1) + " " + str(CURRENT_Y_1) + " " + str(CURRENT_Z_1))
             
 
         # DEMO MODE
