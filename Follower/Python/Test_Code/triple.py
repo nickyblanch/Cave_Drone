@@ -21,7 +21,7 @@
 # we only require MAXProxy for the leader, and not the follower.
 # The following commands should be used to start MAVProxy:
 
-# mavproxy --master=udp:192.168.1.125:14549 --out 127.0.0.1:14553                       (FOLLOWER / OPTIONAL))
+# mavproxy --master=udp:192.168.1.125:14549 --out 127.0.0.1:14553                       (FOLLOWER / OPTIONAL)
 # mavproxy --master=udp:192.168.1.125:14550 --out 127.0.0.1:14551 --out 127.0.0.1:14552 (LEADER / REQUIRED)
 
 # Then, a ground station (QGroundControl) can connect to UDP port 14551 to monitor the
@@ -41,8 +41,9 @@
 
 ###################################################################################################
 
-# DRONE 1: 192.168.1.124:14550
-# DRONE 2: 192.168.1.126:14549
+# DRONE 1: 192.168.1.124 : 14548
+# DRONE 2: 192.168.1.126 : 14549
+# DRONE 3: 192.168.1.147 : 14550
 
 ###################################################################################################
 
@@ -59,7 +60,7 @@ from tkinter import *
 ###################################################################################################
 
 
-FLIGHT_MODE = 2             # 0 = test mode: fly to (TEST_MODE_X, TEST_MODE_Y, TEST_MODE_Z)
+FLIGHT_MODE = 1             # 0 = test mode: fly to (TEST_MODE_X, TEST_MODE_Y, TEST_MODE_Z)
                             # 1 = manual mode: fly to coordinates provided by user
                             # 2 = autonomous mode: fly to hard-coded coordinates
                             # 3 = demo: fly is a 2x2 meter square at an altitude of 1 meter.
@@ -101,12 +102,12 @@ PREV_LEADER_Y = 0           # Previous leader waypoint (y)
 PREV_LEADER_Z = 0           # Previous leader waypoint (z)
 waypoints = []              # List of waypoints for follower; acts as FIFO
 
-drone_1_IP = "127.0.0.1"    # IP address of Drone 1
-drone_2_IP = "127.0.0.1"    # IP address of Drone 2
-drone_3_IP = "127.0.0.1"    # IP address of Drone 3
-drone_1_UDP = 14540         # UDP port of Drone 1
-drone_2_UDP = 14541         # UDP port of Drone 2
-drone_3_UDP = 14542         # UDP port of Drone 2
+drone_1_IP = "0.0.0.0"      # IP address of Drone 1
+drone_2_IP = "0.0.0.0"      # IP address of Drone 2
+drone_3_IP = "0.0.0.0"      # IP address of Drone 3
+drone_1_UDP = 14548         # UDP port of Drone 1
+drone_2_UDP = 14549         # UDP port of Drone 2
+drone_3_UDP = 14550         # UDP port of Drone 3
 
 window_width = 1125         # Width of GUI window
 window_height = 450         # Length of GUI window
@@ -383,11 +384,11 @@ def setup_GUI():
     drone_3_disarm_button.grid(row=2, column=1, columnspan=2, padx=4, pady=2, sticky='w')
 
     # Takeoff buttons
-    drone_1_takeoff_button = Button(left_frame, text="Takeoff Leader", width=20, command=lambda: takeoff_CUSTOM(drone1, -3, 1))
+    drone_1_takeoff_button = Button(left_frame, text="Takeoff Leader", width=20, command=lambda: takeoff_CUSTOM(drone1, -.5, 1))
     drone_1_takeoff_button.grid(row=3, column=0, padx=4, pady=2, sticky='e')
-    drone_2_takeoff_button = Button(middle_frame, text="Takeoff Follower", width=20, command=lambda: takeoff_CUSTOM(drone2, -3, 2))
+    drone_2_takeoff_button = Button(middle_frame, text="Takeoff Follower", width=20, command=lambda: takeoff_CUSTOM(drone2, -.5, 2))
     drone_2_takeoff_button.grid(row=3, column=0, padx=4, pady=2, sticky='e')
-    drone_3_takeoff_button = Button(right_frame, text="Takeoff Follower", width=20, command=lambda: takeoff_CUSTOM(drone3, -3, 3))
+    drone_3_takeoff_button = Button(right_frame, text="Takeoff Follower", width=20, command=lambda: takeoff_CUSTOM(drone3, -.5, 3))
     drone_3_takeoff_button.grid(row=3, column=0, padx=4, pady=2, sticky='e')
 
     # Land buttons
@@ -635,12 +636,20 @@ def update_flight_mode(number, mode):
     FLIGHT_MODE = mode
     print("Flight Mode Updated: " + str(mode))
 
-    if drone1:
-        offboard(drone1)
-    if drone2:
-        offboard(drone2)
-    if drone3:
-        offboard(drone3)
+    if mode == 4:
+        if drone1:
+            land(drone1)
+        if drone2:
+            land(drone2)
+        if drone3:
+            land(drone3)
+    else:
+        if drone1:
+            offboard(drone1)
+        if drone2:
+            offboard(drone2)
+        if drone3:
+            offboard(drone3)
 
     waypoints = []
 
@@ -724,7 +733,7 @@ def establish_connection(number, IP, UDP):
 
     if number == 1:
         # Start a connection listening on a UDP port
-        drone1 = mavutil.mavlink_connection('udpin:' + str(IP) + ':' + str(UDP))
+        drone1 = mavutil.mavlink_connection('udp:' + str(IP) + ':' + str(UDP))
 
         # Wait for the first heartbeat 
         drone1.wait_heartbeat()
@@ -798,9 +807,9 @@ def arm(the_connection):
         the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM, 0, 1, 0, 0, 0, 0, 0, 0)
 
         # Wait until arming confirmed (can manually check with the_connection.motors_armed())
-        print("Waiting for the vehicle to arm")
-        the_connection.motors_armed_wait()
-        print('Armed!')
+        # print("Waiting for the vehicle to arm")
+        # the_connection.motors_armed_wait()
+        # print('Armed!')
 
 
 def disarm(the_connection):
@@ -1120,11 +1129,11 @@ def flight_loop_thread():
 
             # If follower has reached the waypoint, go to next waypoint
             if ((float(CURRENT_X_2) - float(TARGET_X_2))**2 + (float(CURRENT_Y_2) - float(TARGET_Y_2))**2 + (float(CURRENT_Z_2) - float(TARGET_Z_2))**2)**.5 < .3:
-                if (len(waypoints) > waypoint_location_2+2):
+                if (len(waypoints) > waypoint_location_2+3):
                     print("[2] Reached waypoint " + str(waypoint_location_2) + ": " + str(TARGET_X_2) + " " + str(TARGET_Y_2) + " " + str(TARGET_Z_2))
                     waypoint_location_2 = waypoint_location_2 + 1
             if ((float(CURRENT_X_3) - float(TARGET_X_3))**2 + (float(CURRENT_Y_3) - float(TARGET_Y_3))**2 + (float(CURRENT_Z_3) - float(TARGET_Z_3))**2)**.5 < .3:
-                if (waypoint_location_2 > waypoint_location_3+1):
+                if (waypoint_location_2 > waypoint_location_3+2):
                     print("[3] Reached waypoint " + str(waypoint_location_3) + ": " + str(TARGET_X_3) + " " + str(TARGET_Y_3) + " " + str(TARGET_Z_3))
                     waypoint_location_3 = waypoint_location_3 + 1
 
@@ -1214,10 +1223,7 @@ def flight_loop_thread():
 
         # OFF
         elif(FLIGHT_MODE == 4):
-            if drone1:
-                disarm(drone1)
-            if drone2:
-                disarm(drone2)
+            pass
 
         else:
             print("FLIGHT MODE NOT RECOGNIZED OR DRONES NOT CONNECTED.")
