@@ -980,7 +980,7 @@ def request_target_pos_NED(the_connection):
     ################################################
 
     if the_connection:
-        the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, 0, mavutil.mavlink.MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED, 4e6/20, 0, 0, 0, 0, 0)
+        the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, 0, mavutil.mavlink.MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED, 1e6/20, 0, 0, 0, 0, 0)
 
 
 def telemetry_loop_thread(the_connection_1, the_connection_2, the_connection_3):
@@ -1078,8 +1078,12 @@ def telemetry_local_position_thread(the_connection_1, the_connection_2, the_conn
             f.write(f"Drone 2: ({CURRENT_X_2}, {CURRENT_Y_2}, {CURRENT_Z_2})\n")
             f.write(f"Drone 3: ({CURRENT_X_3}, {CURRENT_Y_3}, {CURRENT_Z_3})\n")
             #print('saving coordinates...')
+            f.write(waypoints)
+          
 
-    
+            #with open('coordinates.txt', 'a') as f:
+             #   for waypoint in waypoints:
+             #      f.write(f"Waypoint: {waypoint}\n")
        
 
 
