@@ -45,6 +45,7 @@
 # DRONE 1: 192.168.1.124 : 14548
 # DRONE 2: 192.168.1.126 : 14549
 # DRONE 3: 192.168.1.147 : 14550
+# DRONE 3: 134
 
 ###################################################################################################
 
@@ -980,7 +981,7 @@ def request_target_pos_NED(the_connection):
     ################################################
 
     if the_connection:
-        the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, 0, mavutil.mavlink.MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED, 1e6/20, 0, 0, 0, 0, 0)
+        the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, 0, mavutil.mavlink.MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED, 4e6/20, 0, 0, 0, 0, 0)
 
 
 def telemetry_loop_thread(the_connection_1, the_connection_2, the_connection_3):
@@ -1075,9 +1076,9 @@ def telemetry_local_position_thread(the_connection_1, the_connection_2, the_conn
         with open('coordinates.txt', 'a') as f:
             f.write(f"Drone 1: ({CURRENT_X_1}, {CURRENT_Y_1}, {CURRENT_Z_1})\n")
             f.write(f"Drone 2: ({CURRENT_X_2}, {CURRENT_Y_2}, {CURRENT_Z_2})\n")
-            f.write(f"Drone 3: ({CURRENT_X_3}, {CURRENT_Y_3}, {CURRENT_Z_3})\n")
+            # f.write(f"Drone 3: ({CURRENT_X_3}, {CURRENT_Y_3}, {CURRENT_Z_3})\n")
             #print('saving coordinates...')
-            #f.write(waypoints)
+            f.write(str(waypoints) + "\n")
           
 
             ##with open('coordinates.txt', 'a') as f:
@@ -1132,7 +1133,7 @@ def flight_loop_thread():
         elif (FLIGHT_MODE == 2):
 
             # Set target to current waypoint
-            if (len(waypoints) > 1):
+            if (len(waypoints) > 2):
                 TARGET_X_2 = (waypoints[waypoint_location_2])[0]
                 TARGET_Y_2 = (waypoints[waypoint_location_2])[1]
                 TARGET_Z_2 = (waypoints[waypoint_location_2])[2]
@@ -1153,7 +1154,7 @@ def flight_loop_thread():
                     waypoint_location_3 = waypoint_location_3 + 1
 
             # If leader has traveled more than 1 meter, add a new waypoint
-            if ((CURRENT_X_1 - PREV_LEADER_X)**2 + (CURRENT_Y_1 - PREV_LEADER_Y)**2 + (CURRENT_Z_1 - PREV_LEADER_Z)**2)**.5 > 1:
+            if ((CURRENT_X_1 - PREV_LEADER_X)**2 + (CURRENT_Y_1 - PREV_LEADER_Y)**2 + (CURRENT_Z_1 - PREV_LEADER_Z)**2)**.5 > .3:
                 waypoints.append((CURRENT_X_1, CURRENT_Y_1, CURRENT_Z_1))
                 PREV_LEADER_X = CURRENT_X_1
                 PREV_LEADER_Y = CURRENT_Y_1
