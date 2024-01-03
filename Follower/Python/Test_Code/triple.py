@@ -87,16 +87,16 @@ TARGET_X_3 = 0              # target x coordinate
 TARGET_Y_3 = 0              # target y coordinate
 TARGET_Z_3 = -1             # target z coordinate
 
-
+#changed for testing should all be 0
 CURRENT_X_1 = 0             # current x coordinate
-CURRENT_Y_1 = 0             # current y coordinate
-CURRENT_Z_1 = 0             # current z coordinate
-CURRENT_X_2 = 0             # current x coordinate
-CURRENT_Y_2 = 0             # current y coordinate
-CURRENT_Z_2 = 0             # current z coordinate
-CURRENT_X_3 = 0             # current x coordinate
-CURRENT_Y_3 = 0             # current y coordinate
-CURRENT_Z_3 = 0             # current z coordinate
+CURRENT_Y_1 = 1             # current y coordinate
+CURRENT_Z_1 = 2             # current z coordinate
+CURRENT_X_2 = 3             # current x coordinate
+CURRENT_Y_2 = 4             # current y coordinate
+CURRENT_Z_2 = 5             # current z coordinate
+CURRENT_X_3 = 6             # current x coordinate
+CURRENT_Y_3 = 7             # current y coordinate
+CURRENT_Z_3 = 8             # current z coordinate
 
 PREV_LEADER_X = 0           # Previous leader waypoint (x)
 PREV_LEADER_Y = 0           # Previous leader waypoint (y)
@@ -970,7 +970,7 @@ def request_local_NED(the_connection):
     ################################################
 
     if the_connection:
-        the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, 0, mavutil.mavlink.MAVLINK_MSG_ID_LOCAL_POSITION_NED, 1e6/20, 0, 0, 0, 0, 0)
+        the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, 0, mavutil.mavlink.MAVLINK_MSG_ID_LOCAL_POSITION_NED, 5e6/20, 0, 0, 0, 0, 0)
 
 
 def request_target_pos_NED(the_connection):
@@ -1044,6 +1044,7 @@ def telemetry_local_position_thread(the_connection_1, the_connection_2, the_conn
     # request_target_pos_NED(the_connection_1)
 
     while 1:
+        #print('test')
         if the_connection_1:
             try:
                 # msg = the_connection_1.messages['LOCAL_POSITION_NED']
@@ -1070,6 +1071,16 @@ def telemetry_local_position_thread(the_connection_1, the_connection_2, the_conn
                 CURRENT_Z_3 = msg.z
             except:
                 print("Problem receiving LOCAL_POSITION_NED Mav message: 3.")
+
+            # Write coordinates to a text file
+        with open('coordinates.txt', 'a') as f:
+            f.write(f"Drone 1: ({CURRENT_X_1}, {CURRENT_Y_1}, {CURRENT_Z_1})\n")
+            f.write(f"Drone 2: ({CURRENT_X_2}, {CURRENT_Y_2}, {CURRENT_Z_2})\n")
+            f.write(f"Drone 3: ({CURRENT_X_3}, {CURRENT_Y_3}, {CURRENT_Z_3})\n")
+            #print('saving coordinates...')
+
+    
+       
 
 
 def flight_loop_thread():
