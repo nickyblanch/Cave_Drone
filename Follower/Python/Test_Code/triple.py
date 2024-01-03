@@ -1016,7 +1016,6 @@ def telemetry_loop_thread(the_connection_1, the_connection_2, the_connection_3):
             update_target_ned(the_connection_3, float(TARGET_X_3), float(TARGET_Y_3), float(TARGET_Z_3))
             # print('TARGET 3: ' + str(TARGET_X_3) + ' ' + str(TARGET_Y_3) + ' ' + str(TARGET_Z_3))
 
-
     return 0
 
 
