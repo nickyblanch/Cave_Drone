@@ -1077,10 +1077,10 @@ def telemetry_local_position_thread(the_connection_1, the_connection_2, the_conn
             f.write(f"Drone 2: ({CURRENT_X_2}, {CURRENT_Y_2}, {CURRENT_Z_2})\n")
             f.write(f"Drone 3: ({CURRENT_X_3}, {CURRENT_Y_3}, {CURRENT_Z_3})\n")
             #print('saving coordinates...')
-            f.write(waypoints)
+            #f.write(waypoints)
           
 
-            #with open('coordinates.txt', 'a') as f:
+            ##with open('coordinates.txt', 'a') as f:
              #   for waypoint in waypoints:
              #      f.write(f"Waypoint: {waypoint}\n")
        
