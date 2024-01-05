@@ -36,6 +36,7 @@
 
 
 std::string map_frame = "map";
+std::string final_frame = "final";
 // ros::Time start_time = ros::Time::now();
 
 
@@ -46,11 +47,13 @@ std::string map_frame = "map";
 
 // SUBSCRIBES TO:
 // PUBLISHES:     tf base_link -> cam_frame
+//                tf final -> NED
 void static_broadcaster(void) {
 
     // SETUP ////////////////////////////////////////////////////////////////////////////////
     static tf2_ros::StaticTransformBroadcaster static_broadcaster;
     geometry_msgs::TransformStamped static_transformStamped;
+    geometry_msgs::TransformStamped static_transformStamped_NED;
 
     // HEADER TIMESTAMP AND TF FRAMES ///////////////////////////////////////////////////////
     // static_transformStamped.header.stamp = ros::Time::now();
@@ -59,16 +62,25 @@ void static_broadcaster(void) {
     static_transformStamped.header.frame_id = "cam_frame";
     static_transformStamped.child_frame_id = "base_link";
 
+    static_transformStamped_NED.header.stamp.sec = 0;
+    static_transformStamped_NED.header.stamp.nsec = 0;
+    static_transformStamped_NED.header.frame_id = "final";
+    static_transformStamped_NED.child_frame_id = "NED";
+
     // TRANSLATION; NO TRANSLATION //////////////////////////////////////////////////////////
     static_transformStamped.transform.translation.x = 0;
     static_transformStamped.transform.translation.y = 0;
     static_transformStamped.transform.translation.z = 0;
-    tf2::Quaternion quat;
+
+    static_transformStamped_NED.transform.translation.x = 0;
+    static_transformStamped_NED.transform.translation.y = 0;
+    static_transformStamped_NED.transform.translation.z = 0;
     
     // ORIENTATION //////////////////////////////////////////////////////////////////////////
     // See ModalAI VOXL SEEKER CAM V1 extrinsics for more information on the relationship
     // between the ToF and the VIO coordinate frames. Essentially, the yaw axes are offset
     // by 180 degrees (1 pi rads).
+    tf2::Quaternion quat;
     quat.setRPY(0, 0, 3.14);
     quat.normalize();
     static_transformStamped.transform.rotation.x = quat.x();
@@ -76,8 +88,15 @@ void static_broadcaster(void) {
     static_transformStamped.transform.rotation.z = quat.z();
     static_transformStamped.transform.rotation.w = quat.w();
 
+    // Now, we need a transform from the inertial frame to a more common NED frame.
+    static_transformStamped_NED.transform.rotation.x = -0.5;
+    static_transformStamped_NED.transform.rotation.y = 0.5;
+    static_transformStamped_NED.transform.rotation.z = 0.5;
+    static_transformStamped_NED.transform.rotation.w = 0.5;
+
     // SEND //////////////////////////////////////////////////////////////////////////////////
     static_broadcaster.sendTransform(static_transformStamped);
+    static_broadcaster.sendTransform(static_transformStamped_NED);
 }
 
 
@@ -97,6 +116,7 @@ void poseCallback(const nav_msgs::Odometry::ConstPtr& msg) {
     // TRANSFORM HANDLERS ////////////////////////////////////////////////////////////////////
     static tf2_ros::TransformBroadcaster br;
     geometry_msgs::TransformStamped transform;
+    geometry_msgs::TransformStamped transform_translation;
 
     // FIRST (FIXED) ROTATION ////////////////////////////////////////////////////////////////
     tf2::Quaternion quat;
@@ -124,14 +144,32 @@ void poseCallback(const nav_msgs::Odometry::ConstPtr& msg) {
     transform.header.stamp = msg->header.stamp;
     transform.header.frame_id = "base_link";
     transform.child_frame_id = map_frame;
-    transform.transform.translation.x = -1.0 * x;
-    transform.transform.translation.y = -1.0 * y;
-    transform.transform.translation.z = -1.0 * z;
+    // transform.transform.translation.x = -1.0 * x;
+    // transform.transform.translation.y = -1.0 * y;
+    // transform.transform.translation.z = -1.0 * z;
+    transform.transform.translation.x = 0 * x;
+    transform.transform.translation.y = 0 * y;
+    transform.transform.translation.z = 0 * z;
     transform.transform.rotation.x = q.x();
     transform.transform.rotation.y = q.y();
     transform.transform.rotation.z = q.z();
     transform.transform.rotation.w = q.w();
     br.sendTransform(transform);
+
+    transform_translation.header.stamp = msg->header.stamp;
+    transform_translation.header.frame_id = map_frame;
+    transform_translation.child_frame_id = final_frame;
+    transform_translation.transform.translation.x = -1.0 * x;
+    transform_translation.transform.translation.y = -1.0 * y;
+    transform_translation.transform.translation.z = -1.0 * z;
+    // transform_translation.transform.translation.x = 0 * x;
+    // transform_translation.transform.translation.y = 0 * y;
+    // transform_translation.transform.translation.z = 0 * z;
+    transform_translation.transform.rotation.x = 0;
+    transform_translation.transform.rotation.y = 0;
+    transform_translation.transform.rotation.z = 0;
+    transform_translation.transform.rotation.w = 1;
+    br.sendTransform(transform_translation);
 
 }
 
