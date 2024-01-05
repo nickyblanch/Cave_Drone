@@ -357,7 +357,7 @@ def setup_GUI():
     drone_3_UDP_entry.grid(row=1, column=1, pady=10, sticky='w')
 
     # IP Buttons
-    photo = PhotoImage(file = cwd+"/Follower/Python/GUI_Images/wifi_small.png")
+    photo = PhotoImage(file = cwd+"/Ground Station Code/Python/GUI_Images/wifi_small.png")
 
     drone_1_IP_button = Button(left_frame, image=photo, command=update_drone_1_IP)
     drone_1_IP_button.image = photo
@@ -1042,6 +1042,8 @@ def telemetry_local_position_thread(the_connection_1, the_connection_2, the_conn
 
     # request_local_NED(the_connection_1)
     # request_target_pos_NED(the_connection_1)
+    
+    new_message = False
 
     while 1:
         #print('test')
@@ -1053,6 +1055,7 @@ def telemetry_local_position_thread(the_connection_1, the_connection_2, the_conn
                 CURRENT_Y_1 = msg.y
                 CURRENT_Z_1 = msg.z
                 # print(str(msg.x) + " " + str(msg.y) + " " + str(msg.z))
+                new_message = True
             except:
                 print("Problem receiving LOCAL_POSITION_NED Mav message: 1.")
         if the_connection_2:
@@ -1061,6 +1064,7 @@ def telemetry_local_position_thread(the_connection_1, the_connection_2, the_conn
                 CURRENT_X_2 = msg.x
                 CURRENT_Y_2 = msg.y
                 CURRENT_Z_2 = msg.z
+                new_message = True
             except:
                 print("Problem receiving LOCAL_POSITION_NED Mav message: 2.")
         if the_connection_3:
@@ -1069,23 +1073,20 @@ def telemetry_local_position_thread(the_connection_1, the_connection_2, the_conn
                 CURRENT_X_3 = msg.x
                 CURRENT_Y_3 = msg.y
                 CURRENT_Z_3 = msg.z
+                new_message = True
             except:
                 print("Problem receiving LOCAL_POSITION_NED Mav message: 3.")
 
             # Write coordinates to a text file
-        with open('coordinates.txt', 'a') as f:
-            f.write(f"Drone 1: ({CURRENT_X_1}, {CURRENT_Y_1}, {CURRENT_Z_1})\n")
-            f.write(f"Drone 2: ({CURRENT_X_2}, {CURRENT_Y_2}, {CURRENT_Z_2})\n")
-            # f.write(f"Drone 3: ({CURRENT_X_3}, {CURRENT_Y_3}, {CURRENT_Z_3})\n")
-            #print('saving coordinates...')
-            f.write(str(waypoints) + "\n")
-          
-
-            ##with open('coordinates.txt', 'a') as f:
-             #   for waypoint in waypoints:
-             #      f.write(f"Waypoint: {waypoint}\n")
+        if new_message:
+            with open('coordinates.txt', 'a') as f:
+                f.write(f"{CURRENT_X_1},{CURRENT_Y_1},{CURRENT_Z_1},")
+                f.write(f"{CURRENT_X_2},{CURRENT_Y_2},{CURRENT_Z_2})\n")
+                # f.write(f"Drone 3: ({CURRENT_X_3}, {CURRENT_Y_3}, {CURRENT_Z_3})\n")
+                #print('saving coordinates...')
+                # f.write(str(waypoints) + "\n")
+            new_message = False
        
-
 
 def flight_loop_thread():
     ################################################
@@ -1160,7 +1161,9 @@ def flight_loop_thread():
                 PREV_LEADER_Y = CURRENT_Y_1
                 PREV_LEADER_Z = CURRENT_Z_1
                 print("New waypoint + " + str(len(waypoints)) + ": " + str(CURRENT_X_1) + " " + str(CURRENT_Y_1) + " " + str(CURRENT_Z_1))
-            
+                f = open('coordinates.txt', 'a')
+                f.write(str(CURRENT_X_1) + "," + str(CURRENT_Y_1) + "," + str(CURRENT_Z_1) + "\n")
+                f.close()
 
         # DEMO MODE
         elif (FLIGHT_MODE == 3 and drone1 and drone2):
