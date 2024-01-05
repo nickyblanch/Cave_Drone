@@ -1,0 +1,6 @@
+ data = csvread("PARSED.csv");
+ figure;
+ plot3(data(:, 1), data(:, 2), data(:, 3));
+ xlabel("X");
+ xlabel("Y");
+ zlabel("Z")
