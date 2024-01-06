@@ -1146,7 +1146,7 @@ def flight_loop_thread():
 
             # If follower has reached the waypoint, go to next waypoint
             if ((float(CURRENT_X_2) - float(TARGET_X_2))**2 + (float(CURRENT_Y_2) - float(TARGET_Y_2))**2 + (float(CURRENT_Z_2) - float(TARGET_Z_2))**2)**.5 < .3:
-                if (len(waypoints) > waypoint_location_2+3):
+                if (len(waypoints) > waypoint_location_2+5):
                     print("[2] Reached waypoint " + str(waypoint_location_2) + ": " + str(TARGET_X_2) + " " + str(TARGET_Y_2) + " " + str(TARGET_Z_2))
                     waypoint_location_2 = waypoint_location_2 + 1
             if ((float(CURRENT_X_3) - float(TARGET_X_3))**2 + (float(CURRENT_Y_3) - float(TARGET_Y_3))**2 + (float(CURRENT_Z_3) - float(TARGET_Z_3))**2)**.5 < .3:
