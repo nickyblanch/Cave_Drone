@@ -1134,7 +1134,7 @@ def flight_loop_thread():
         elif (FLIGHT_MODE == 2):
 
             # Set target to current waypoint
-            if (len(waypoints) > 2):
+            if (len(waypoints) > 4):
                 TARGET_X_2 = (waypoints[waypoint_location_2])[0]
                 TARGET_Y_2 = (waypoints[waypoint_location_2])[1]
                 TARGET_Z_2 = (waypoints[waypoint_location_2])[2]
@@ -1161,7 +1161,7 @@ def flight_loop_thread():
                 PREV_LEADER_Y = CURRENT_Y_1
                 PREV_LEADER_Z = CURRENT_Z_1
                 print("New waypoint + " + str(len(waypoints)) + ": " + str(CURRENT_X_1) + " " + str(CURRENT_Y_1) + " " + str(CURRENT_Z_1))
-                f = open('coordinates.txt', 'a')
+                f = open('waypoints.csv', 'a')
                 f.write(str(CURRENT_X_1) + "," + str(CURRENT_Y_1) + "," + str(CURRENT_Z_1) + "\n")
                 f.close()
 
