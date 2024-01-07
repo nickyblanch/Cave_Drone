@@ -1081,7 +1081,7 @@ def telemetry_local_position_thread(the_connection_1, the_connection_2, the_conn
         if new_message:
             with open('coordinates.txt', 'a') as f:
                 f.write(f"{CURRENT_X_1},{CURRENT_Y_1},{CURRENT_Z_1},")
-                f.write(f"{CURRENT_X_2},{CURRENT_Y_2},{CURRENT_Z_2})\n")
+                f.write(f"{CURRENT_X_2},{CURRENT_Y_2},{CURRENT_Z_2}\n")
                 # f.write(f"Drone 3: ({CURRENT_X_3}, {CURRENT_Y_3}, {CURRENT_Z_3})\n")
                 #print('saving coordinates...')
                 # f.write(str(waypoints) + "\n")
