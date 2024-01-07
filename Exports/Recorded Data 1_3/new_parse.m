@@ -8,7 +8,7 @@ title('Drone Positions','Color',[0 0 1],'FontSize', 15)
 xlabel("X-Axis","FontSize",10,"Color",[0 0 1]);
 ylabel("Y-Axis","FontSize",10,"Color",[0 0 1]);
 zlabel("Z-Axis","FontSize",10,"Color",[0 0 1]);
-xlim([-3 5]);
-ylim([-3 5]);
-zlim([-3 5]);
+xlim([0 8]);
+ylim([0 5]);
+zlim([-3 2]);
 grid on
