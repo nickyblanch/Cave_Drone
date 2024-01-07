@@ -88,7 +88,6 @@ TARGET_X_3 = 0              # target x coordinate
 TARGET_Y_3 = 0              # target y coordinate
 TARGET_Z_3 = -1             # target z coordinate
 
-#changed for testing should all be 0
 CURRENT_X_1 = 0             # current x coordinate
 CURRENT_Y_1 = 0             # current y coordinate
 CURRENT_Z_1 = 0             # current z coordinate
@@ -324,10 +323,6 @@ def setup_GUI():
     right_frame_bottom_coords.configure(background="ivory4")
     bottom_frame.configure(background="ivory4")
 
-
-
-
-    
     # Title
     title = Label(top_frame, text='CAVE DRONE GCS', font=('Arial 26'))
     title.pack()
@@ -358,10 +353,14 @@ def setup_GUI():
 
     # IP Buttons
     photo = PhotoImage(file = cwd+"/Ground Station Code/Python/GUI_Images/wifi_small.png")
+    setup_photo = PhotoImage(file = cwd+"/Ground Station Code/Python/GUI_Images/setup.png")
 
     drone_1_IP_button = Button(left_frame, image=photo, command=update_drone_1_IP)
     drone_1_IP_button.image = photo
     drone_1_IP_button.grid(row=1, column=2, padx=5, pady=10, sticky='w')
+    drone_1_setup = Button(left_frame, image=setup_photo, command=setup)
+    drone_1_setup.image = setup_photo
+    drone_1_setup.grid(row=1, column=3, pady=10, sticky='w')
     drone_2_IP_button = Button(middle_frame, image=photo, command=update_drone_2_IP)
     drone_2_IP_button.image = photo
     drone_2_IP_button.grid(row=1, column=2, padx=5, pady=10, sticky='w')
@@ -704,9 +703,9 @@ def setup():
     ################################################
 
     # Begin our telemtry thread
-    t1 = threading.Thread(target=telemetry_loop_thread, args=(drone1,drone2))
+    t1 = threading.Thread(target=telemetry_loop_thread, args=(drone1,drone2, drone3))
     t1.start()
-    t2 = threading.Thread(target=telemetry_local_position_thread, args=(drone1,drone2))
+    t2 = threading.Thread(target=telemetry_local_position_thread, args=(drone1,drone2, drone3))
     t2.start()
     t3 = threading.Thread(target=flight_loop_thread, args=())
     t3.start()
@@ -787,15 +786,6 @@ def establish_connection(number, IP, UDP):
         CURRENT_X_3 = msg["x"]
         CURRENT_Y_3 = msg["y"]
         CURRENT_Z_3 = msg["z"]
-
-    # Begin our telemtry thread
-    t1 = threading.Thread(target=telemetry_loop_thread, args=(drone1,drone2,drone3))
-    t1.start()
-    t2 = threading.Thread(target=telemetry_local_position_thread, args=(drone1,drone2,drone3))
-    t2.start()
-    t3 = threading.Thread(target=flight_loop_thread, args=())
-    t3.start()
-
 
 
 def arm(the_connection):
@@ -1106,6 +1096,7 @@ def flight_loop_thread():
     global PREV_LEADER_Y
     global PREV_LEADER_Z
     global SEND_TELEMETRY
+    global waypoints
 
     waypoint_location_2 = 0
     waypoint_location_3 = 0
@@ -1139,31 +1130,42 @@ def flight_loop_thread():
                 TARGET_Y_2 = (waypoints[waypoint_location_2])[1]
                 TARGET_Z_2 = (waypoints[waypoint_location_2])[2]
 
-            if (waypoint_location_2 > 0):
-                TARGET_X_3 = (waypoints[waypoint_location_3])[0]
-                TARGET_Y_3 = (waypoints[waypoint_location_3])[1]
-                TARGET_Z_3 = (waypoints[waypoint_location_3])[2]
+            # if (waypoint_location_2 > 0):
+            #     TARGET_X_3 = (waypoints[waypoint_location_3])[0]
+            #     TARGET_Y_3 = (waypoints[waypoint_location_3])[1]
+            #     TARGET_Z_3 = (waypoints[waypoint_location_3])[2]
 
             # If follower has reached the waypoint, go to next waypoint
             if ((float(CURRENT_X_2) - float(TARGET_X_2))**2 + (float(CURRENT_Y_2) - float(TARGET_Y_2))**2 + (float(CURRENT_Z_2) - float(TARGET_Z_2))**2)**.5 < .3:
                 if (len(waypoints) > waypoint_location_2+5):
                     print("[2] Reached waypoint " + str(waypoint_location_2) + ": " + str(TARGET_X_2) + " " + str(TARGET_Y_2) + " " + str(TARGET_Z_2))
                     waypoint_location_2 = waypoint_location_2 + 1
-            if ((float(CURRENT_X_3) - float(TARGET_X_3))**2 + (float(CURRENT_Y_3) - float(TARGET_Y_3))**2 + (float(CURRENT_Z_3) - float(TARGET_Z_3))**2)**.5 < .3:
-                if (waypoint_location_2 > waypoint_location_3+2):
-                    print("[3] Reached waypoint " + str(waypoint_location_3) + ": " + str(TARGET_X_3) + " " + str(TARGET_Y_3) + " " + str(TARGET_Z_3))
-                    waypoint_location_3 = waypoint_location_3 + 1
+            # if ((float(CURRENT_X_3) - float(TARGET_X_3))**2 + (float(CURRENT_Y_3) - float(TARGET_Y_3))**2 + (float(CURRENT_Z_3) - float(TARGET_Z_3))**2)**.5 < .3:
+            #     if (waypoint_location_2 > waypoint_location_3+2):
+            #         print("[3] Reached waypoint " + str(waypoint_location_3) + ": " + str(TARGET_X_3) + " " + str(TARGET_Y_3) + " " + str(TARGET_Z_3))
+            #         waypoint_location_3 = waypoint_location_3 + 1
 
             # If leader has traveled more than 1 meter, add a new waypoint
             if ((CURRENT_X_1 - PREV_LEADER_X)**2 + (CURRENT_Y_1 - PREV_LEADER_Y)**2 + (CURRENT_Z_1 - PREV_LEADER_Z)**2)**.5 > .5:
                 waypoints.append((CURRENT_X_1, CURRENT_Y_1, CURRENT_Z_1))
+                
+                # Record previous position
                 PREV_LEADER_X = CURRENT_X_1
                 PREV_LEADER_Y = CURRENT_Y_1
                 PREV_LEADER_Z = CURRENT_Z_1
+
+                # Record new waypoint
                 print("New waypoint + " + str(len(waypoints)) + ": " + str(CURRENT_X_1) + " " + str(CURRENT_Y_1) + " " + str(CURRENT_Z_1))
                 f = open('waypoints.csv', 'a')
                 f.write(str(CURRENT_X_1) + "," + str(CURRENT_Y_1) + "," + str(CURRENT_Z_1) + "\n")
                 f.close()
+
+                # Set follower to a new waypoint (DEBUG)
+                # if len(waypoints) > 4:
+                #     TARGET_X_2 = (waypoints[len(waypoints) - 4])[0]
+                #     TARGET_Y_2 = (waypoints[len(waypoints) - 4])[1]
+                #     TARGET_Z_2 = (waypoints[len(waypoints) - 4])[2]
+
 
         # DEMO MODE
         elif (FLIGHT_MODE == 3 and drone1 and drone2):
