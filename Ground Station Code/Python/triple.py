@@ -90,14 +90,14 @@ TARGET_Z_3 = -1             # target z coordinate
 
 #changed for testing should all be 0
 CURRENT_X_1 = 0             # current x coordinate
-CURRENT_Y_1 = 1             # current y coordinate
-CURRENT_Z_1 = 2             # current z coordinate
-CURRENT_X_2 = 3             # current x coordinate
-CURRENT_Y_2 = 4             # current y coordinate
-CURRENT_Z_2 = 5             # current z coordinate
-CURRENT_X_3 = 6             # current x coordinate
-CURRENT_Y_3 = 7             # current y coordinate
-CURRENT_Z_3 = 8             # current z coordinate
+CURRENT_Y_1 = 0             # current y coordinate
+CURRENT_Z_1 = 0             # current z coordinate
+CURRENT_X_2 = 0             # current x coordinate
+CURRENT_Y_2 = 0             # current y coordinate
+CURRENT_Z_2 = 0             # current z coordinate
+CURRENT_X_3 = 0             # current x coordinate
+CURRENT_Y_3 = 0             # current y coordinate
+CURRENT_Z_3 = 0             # current z coordinate
 
 PREV_LEADER_X = 0           # Previous leader waypoint (x)
 PREV_LEADER_Y = 0           # Previous leader waypoint (y)
@@ -1155,7 +1155,7 @@ def flight_loop_thread():
                     waypoint_location_3 = waypoint_location_3 + 1
 
             # If leader has traveled more than 1 meter, add a new waypoint
-            if ((CURRENT_X_1 - PREV_LEADER_X)**2 + (CURRENT_Y_1 - PREV_LEADER_Y)**2 + (CURRENT_Z_1 - PREV_LEADER_Z)**2)**.5 > .3:
+            if ((CURRENT_X_1 - PREV_LEADER_X)**2 + (CURRENT_Y_1 - PREV_LEADER_Y)**2 + (CURRENT_Z_1 - PREV_LEADER_Z)**2)**.5 > .5:
                 waypoints.append((CURRENT_X_1, CURRENT_Y_1, CURRENT_Z_1))
                 PREV_LEADER_X = CURRENT_X_1
                 PREV_LEADER_Y = CURRENT_Y_1
