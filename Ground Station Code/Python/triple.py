@@ -703,9 +703,16 @@ def setup():
     ################################################
 
     # Begin our telemtry thread
-    t1 = threading.Thread(target=telemetry_loop_thread, args=(drone1,drone2, drone3))
+    # t1 = threading.Thread(target=telemetry_loop_thread, args=(drone1,drone2, drone3))
+    # t1.start()
+    # t2 = threading.Thread(target=telemetry_local_position_thread, args=(drone1,drone2, drone3))
+    # t2.start()
+    # t3 = threading.Thread(target=flight_loop_thread, args=())
+    # t3.start()
+
+    t1 = threading.Thread(target=telemetry_loop_thread, args=())
     t1.start()
-    t2 = threading.Thread(target=telemetry_local_position_thread, args=(drone1,drone2, drone3))
+    t2 = threading.Thread(target=telemetry_local_position_thread, args=())
     t2.start()
     t3 = threading.Thread(target=flight_loop_thread, args=())
     t3.start()
@@ -974,7 +981,8 @@ def request_target_pos_NED(the_connection):
         the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL, 0, mavutil.mavlink.MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED, 4e6/20, 0, 0, 0, 0, 0)
 
 
-def telemetry_loop_thread(the_connection_1, the_connection_2, the_connection_3):
+# def telemetry_loop_thread(the_connection_1, the_connection_2, the_connection_3):
+def telemetry_loop_thread():
 
     ################################################
     # SUMMARY: telemtry_loop_thread continually sends
@@ -997,20 +1005,21 @@ def telemetry_loop_thread(the_connection_1, the_connection_2, the_connection_3):
     while SEND_TELEMETRY:
         # print("TARGET: " + str(TARGET_X_1)) #DEBUG
 
-        if the_connection_1:
-            update_target_ned(the_connection_1, float(TARGET_X_1), float(TARGET_Y_1), float(TARGET_Z_1))
+        if drone1:
+            update_target_ned(drone1, float(TARGET_X_1), float(TARGET_Y_1), float(TARGET_Z_1))
             # print('TARGET: ' + str(TARGET_X_1) + ' ' + str(TARGET_Y_1) + ' ' + str(TARGET_Z_1))
-        if the_connection_2:
-            update_target_ned(the_connection_2, float(TARGET_X_2), float(TARGET_Y_2), float(TARGET_Z_2))
+        if drone2:
+            update_target_ned(drone2, float(TARGET_X_2), float(TARGET_Y_2), float(TARGET_Z_2))
             # print('TARGET 2: ' + str(TARGET_X_2) + ' ' + str(TARGET_Y_2) + ' ' + str(TARGET_Z_2))
-        if the_connection_3:
-            update_target_ned(the_connection_3, float(TARGET_X_3), float(TARGET_Y_3), float(TARGET_Z_3))
+        if drone3:
+            update_target_ned(drone3, float(TARGET_X_3), float(TARGET_Y_3), float(TARGET_Z_3))
             # print('TARGET 3: ' + str(TARGET_X_3) + ' ' + str(TARGET_Y_3) + ' ' + str(TARGET_Z_3))
 
     return 0
 
 
-def telemetry_local_position_thread(the_connection_1, the_connection_2, the_connection_3):
+# def telemetry_local_position_thread(the_connection_1, the_connection_2, the_connection_3):
+def telemetry_local_position_thread():
 
     ############################################################
     # SUMMARY: telemetry_local_position_thread continually     #
@@ -1037,10 +1046,10 @@ def telemetry_local_position_thread(the_connection_1, the_connection_2, the_conn
 
     while 1:
         #print('test')
-        if the_connection_1:
+        if drone1:
             try:
                 # msg = the_connection_1.messages['LOCAL_POSITION_NED']
-                msg = the_connection_1.recv_match(type='LOCAL_POSITION_NED', blocking=True)
+                msg = drone1.recv_match(type='LOCAL_POSITION_NED', blocking=True)
                 CURRENT_X_1 = msg.x
                 CURRENT_Y_1 = msg.y
                 CURRENT_Z_1 = msg.z
@@ -1048,18 +1057,18 @@ def telemetry_local_position_thread(the_connection_1, the_connection_2, the_conn
                 new_message = True
             except:
                 print("Problem receiving LOCAL_POSITION_NED Mav message: 1.")
-        if the_connection_2:
+        if drone2:
             try:
-                msg = the_connection_2.recv_match(type='LOCAL_POSITION_NED', blocking=True)
+                msg = drone2.recv_match(type='LOCAL_POSITION_NED', blocking=True)
                 CURRENT_X_2 = msg.x
                 CURRENT_Y_2 = msg.y
                 CURRENT_Z_2 = msg.z
                 new_message = True
             except:
                 print("Problem receiving LOCAL_POSITION_NED Mav message: 2.")
-        if the_connection_3:
+        if drone3:
             try:
-                msg = the_connection_3.recv_match(type='LOCAL_POSITION_NED', blocking=True)
+                msg = drone3.recv_match(type='LOCAL_POSITION_NED', blocking=True)
                 CURRENT_X_3 = msg.x
                 CURRENT_Y_3 = msg.y
                 CURRENT_Z_3 = msg.z
