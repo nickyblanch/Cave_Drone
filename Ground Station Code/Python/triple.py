@@ -1135,7 +1135,7 @@ def flight_loop_thread():
         elif (FLIGHT_MODE == 2):
 
             # Set target to current waypoint
-            if (len(waypoints) > 4):
+            if (len(waypoints) > 3):
                 TARGET_X_2 = (waypoints[waypoint_location_2])[0]
                 TARGET_Y_2 = (waypoints[waypoint_location_2])[1]
                 TARGET_Z_2 = (waypoints[waypoint_location_2])[2]
