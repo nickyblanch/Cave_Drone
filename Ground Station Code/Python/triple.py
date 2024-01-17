@@ -386,11 +386,11 @@ def setup_GUI():
     drone_3_disarm_button.grid(row=2, column=1, columnspan=2, padx=4, pady=2, sticky='w')
 
     # Takeoff buttons
-    drone_1_takeoff_button = Button(left_frame, text="Takeoff Leader", width=20, command=lambda: takeoff_CUSTOM(drone1, -.5, 1))
+    drone_1_takeoff_button = Button(left_frame, text="Takeoff Leader", width=20, command=lambda: takeoff_CUSTOM(drone1, -.75, 1))
     drone_1_takeoff_button.grid(row=3, column=0, padx=4, pady=2, sticky='e')
-    drone_2_takeoff_button = Button(middle_frame, text="Takeoff Follower", width=20, command=lambda: takeoff_CUSTOM(drone2, -.5, 2))
+    drone_2_takeoff_button = Button(middle_frame, text="Takeoff Follower", width=20, command=lambda: takeoff_CUSTOM(drone2, -.75, 2))
     drone_2_takeoff_button.grid(row=3, column=0, padx=4, pady=2, sticky='e')
-    drone_3_takeoff_button = Button(right_frame, text="Takeoff Follower", width=20, command=lambda: takeoff_CUSTOM(drone3, -.5, 3))
+    drone_3_takeoff_button = Button(right_frame, text="Takeoff Follower", width=20, command=lambda: takeoff_CUSTOM(drone3, -.75, 3))
     drone_3_takeoff_button.grid(row=3, column=0, padx=4, pady=2, sticky='e')
 
     # Land buttons
@@ -1135,7 +1135,7 @@ def flight_loop_thread():
         elif (FLIGHT_MODE == 2):
 
             # Set target to current waypoint
-            if (len(waypoints) > 3):
+            if (len(waypoints) > 6):
                 TARGET_X_2 = (waypoints[waypoint_location_2])[0]
                 TARGET_Y_2 = (waypoints[waypoint_location_2])[1]
                 TARGET_Z_2 = (waypoints[waypoint_location_2])[2]
@@ -1146,8 +1146,8 @@ def flight_loop_thread():
             #     TARGET_Z_3 = (waypoints[waypoint_location_3])[2]
 
             # If follower has reached the waypoint, go to next waypoint
-            if ((float(CURRENT_X_2) - float(TARGET_X_2))**2 + (float(CURRENT_Y_2) - float(TARGET_Y_2))**2 + (float(CURRENT_Z_2) - float(TARGET_Z_2))**2)**.5 < .3:
-                if (len(waypoints) > waypoint_location_2+5):
+            if ((float(CURRENT_X_2) - float(TARGET_X_2))**2 + (float(CURRENT_Y_2) - float(TARGET_Y_2))**2 + (float(CURRENT_Z_2) - float(TARGET_Z_2))**2)**.5 < .15:
+                if (len(waypoints) > waypoint_location_2+7):
                     print("[2] Reached waypoint " + str(waypoint_location_2) + ": " + str(TARGET_X_2) + " " + str(TARGET_Y_2) + " " + str(TARGET_Z_2))
                     waypoint_location_2 = waypoint_location_2 + 1
             # if ((float(CURRENT_X_3) - float(TARGET_X_3))**2 + (float(CURRENT_Y_3) - float(TARGET_Y_3))**2 + (float(CURRENT_Z_3) - float(TARGET_Z_3))**2)**.5 < .3:
@@ -1156,7 +1156,7 @@ def flight_loop_thread():
             #         waypoint_location_3 = waypoint_location_3 + 1
 
             # If leader has traveled more than 1 meter, add a new waypoint
-            if ((CURRENT_X_1 - PREV_LEADER_X)**2 + (CURRENT_Y_1 - PREV_LEADER_Y)**2 + (CURRENT_Z_1 - PREV_LEADER_Z)**2)**.5 > .5:
+            if ((CURRENT_X_1 - PREV_LEADER_X)**2 + (CURRENT_Y_1 - PREV_LEADER_Y)**2 + (CURRENT_Z_1 - PREV_LEADER_Z)**2)**.5 > .35:
                 waypoints.append((CURRENT_X_1, CURRENT_Y_1, CURRENT_Z_1))
                 
                 # Record previous position
