@@ -1,6 +1,6 @@
 clear; clc; close all;
-data = readmatrix("leader_follower_light_1_8_318_shortened.csv");
-waypoints = readmatrix("leader_follower_light_waypoints_1_8_318.csv");
+data = readmatrix("Drone3_drone1_success_dark_1_19_202.csv");
+waypoints = readmatrix("Drone3_drone1_success_dark_1_19_202_waypoints.csv");
 %changed cvsread because of warning to readmatrix
 figure;
 
