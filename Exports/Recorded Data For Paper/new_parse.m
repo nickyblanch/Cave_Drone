@@ -9,7 +9,7 @@ hold on;
 plot3(data(:,4),data(:, 5), 1.0 * data(:, 6), 'Color', 'Red');       % follower
 hold on;
 plot3(waypoints(:, 1), waypoints(:, 2), 1.0 * waypoints(:, 3), '.black', 'MarkerSize', 12); % waypoints
-title('Recorded Flight Path of Vehicle Train, Fully Lit Conditions','Color','Black','FontSize', 15)
+title('Recorded Flight Path of Vehicle Train, Fully Dark Conditions','Color','Black','FontSize', 15)
 xlabel("North (m)","FontSize",12, 'fontweight', 'bold');
 ylabel("East (m)","FontSize",12, 'fontweight', 'bold');
 zlabel("Down (m)","FontSize",12, 'fontweight', 'bold');

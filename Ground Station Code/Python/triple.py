@@ -108,8 +108,8 @@ drone_1_IP = "0.0.0.0"      # IP address of Drone 1
 drone_2_IP = "0.0.0.0"      # IP address of Drone 2
 drone_3_IP = "0.0.0.0"      # IP address of Drone 3
 drone_1_UDP = 14548         # UDP port of Drone 1
-drone_2_UDP = 14549         # UDP port of Drone 2
-drone_3_UDP = 14550         # UDP port of Drone 3
+drone_2_UDP = 14550         # UDP port of Drone 2
+drone_3_UDP = 14549         # UDP port of Drone 3
 
 window_width = 1125         # Width of GUI window
 window_height = 450         # Length of GUI window
