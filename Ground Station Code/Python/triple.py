@@ -11,28 +11,28 @@
 #    Dependencies: pymavlink, time, threading, os, tkinter
 # Reproducibility: Tested to work on Windows 11 and Ubunutu 22.xx as of 9/25/2023. Please install
 #                  the pymavlink and tkinter libraries before proceeding.
-
+#
 # Thank you to ardusub.com Intelligent Quads on YouTube for pymavlink references.
-
+#
 # ADDITIONAL COMMENTS
-
+#
 # Important: In order for this pymavlink script to execute on a ground station computer,
 # run QGroundcontrol, and still communicate with the drone, MAVProxy is required to route
 # the MAVLINK messages. Because we only need to monitor the leader on QGroundcontrol,
 # we only require MAXProxy for the leader, and not the follower.
 # The following commands should be used to start MAVProxy:
-
+#
 # mavproxy --master=udp:192.168.1.125:14549 --out 127.0.0.1:14553                       (FOLLOWER / OPTIONAL)
 # mavproxy --master=udp:192.168.1.125:14550 --out 127.0.0.1:14551 --out 127.0.0.1:14552 (LEADER / REQUIRED)
-
+#
 # Then, a ground station (QGroundControl) can connect to UDP port 14551 to monitor the
 # leader drone. The vehicles can be connected to at the following addresses:
 # 127.0.0.1:14553 (FOLLOWER, IF USING MAXPROXY FOR FOLLOWER)
 # 192.168.1.124: (FOLLOWER, IF NOT USING MAVPROXY FOR FOLLOWER)
 # 127.0.0.1:14552 (LEADER, MUST USE MAVPROXY FOR LEADER)
-
+#
 # When calibrating sensors, the closest board orientation is: YAW 90 ROLL 90 PITCH 180
-
+#
 ###################################################################################################
 # TODO
 
@@ -131,6 +131,7 @@ def main():
     setup_GUI()
 
     # Setup
+    setup()
 
     # Window mainloop
     window.after(0, update_current_coords)
@@ -359,9 +360,9 @@ def setup_GUI():
     drone_1_IP_button = Button(left_frame, image=photo, command=update_drone_1_IP)
     drone_1_IP_button.image = photo
     drone_1_IP_button.grid(row=1, column=2, padx=5, pady=10, sticky='w')
-    drone_1_setup = Button(left_frame, image=setup_photo, command=setup)
-    drone_1_setup.image = setup_photo
-    drone_1_setup.grid(row=1, column=3, pady=10, sticky='w')
+    # drone_1_setup = Button(left_frame, image=setup_photo, command=setup)
+    # drone_1_setup.image = setup_photo
+    # drone_1_setup.grid(row=1, column=3, pady=10, sticky='w')
     drone_2_IP_button = Button(middle_frame, image=photo, command=update_drone_2_IP)
     drone_2_IP_button.image = photo
     drone_2_IP_button.grid(row=1, column=2, padx=5, pady=10, sticky='w')
