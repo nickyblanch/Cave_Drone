@@ -1,5 +1,4 @@
 ###################################################################################################
-# most recent use this one 12/18/23 
 # Author: Nicolas Blanchard
 #         Contact: nickyblanch@arizona.edu | (520) 834-3191
 #         Purpose: Automatic control for follower drone in cave drone project.
@@ -58,6 +57,8 @@ import os
 import tkinter as tk
 from tkinter import ttk
 from tkinter import *
+from datetime import datetime
+# import rospy
 
 
 ###################################################################################################
@@ -117,6 +118,9 @@ window_height = 450         # Length of GUI window
 drone1 = 0                  # Drone 1 variable
 drone2 = 0                  # Drone 2 variable
 drone3 = 0                  # Drone 2 variable
+
+coordinates_file_name = ""
+waypoints_file_name = ""
 
 
 ###################################################################################################
@@ -704,20 +708,21 @@ def setup():
     # [no inputs or outputs]
     ################################################
 
-    # Begin our telemtry thread
-    # t1 = threading.Thread(target=telemetry_loop_thread, args=(drone1,drone2, drone3))
-    # t1.start()
-    # t2 = threading.Thread(target=telemetry_local_position_thread, args=(drone1,drone2, drone3))
-    # t2.start()
-    # t3 = threading.Thread(target=flight_loop_thread, args=())
-    # t3.start()
+    global coordinates_file_name
+    global waypoints_file_name
 
+    # Begin our threads
     t1 = threading.Thread(target=telemetry_loop_thread, args=())
     t1.start()
     t2 = threading.Thread(target=telemetry_local_position_thread, args=())
     t2.start()
     t3 = threading.Thread(target=flight_loop_thread, args=())
     t3.start()
+
+    # Initialize file names
+    curr_time = datetime.now()
+    coordinates_file_name = "./Recorded_Telemetry/" + "coordinates" + str(curr_time.year) + "_" + str(curr_time.month) + "_" + str(curr_time.day) + "_" + str(curr_time.hour) + "_" + str(curr_time.day) + "_" + str(curr_time.hour) + "_" + str(curr_time.minute) + "_" + str(curr_time.second) + ".csv"
+    waypoints_file_name = "./Recorded_Telemetry/" + "waypoints" + str(curr_time.year) + "_" + str(curr_time.month) + "_" + str(curr_time.day) + "_" + str(curr_time.hour) + "_" + str(curr_time.day) + "_" + str(curr_time.hour) + "_" + str(curr_time.minute) + "_" + str(curr_time.second) + ".csv"
 
 
 def establish_connection(number, IP, UDP):
@@ -1078,14 +1083,11 @@ def telemetry_local_position_thread():
             except:
                 print("Problem receiving LOCAL_POSITION_NED Mav message: 3.")
 
-            # Write coordinates to a text file
+        # Write coordinates to a text file
         if new_message:
-            with open('coordinates.txt', 'a') as f:
+            with open(coordinates_file_name, 'a') as f:
                 f.write(f"{CURRENT_X_1},{CURRENT_Y_1},{CURRENT_Z_1},")
                 f.write(f"{CURRENT_X_2},{CURRENT_Y_2},{CURRENT_Z_2}\n")
-                # f.write(f"Drone 3: ({CURRENT_X_3}, {CURRENT_Y_3}, {CURRENT_Z_3})\n")
-                #print('saving coordinates...')
-                # f.write(str(waypoints) + "\n")
             new_message = False
        
 
@@ -1167,7 +1169,7 @@ def flight_loop_thread():
 
                 # Record new waypoint
                 print("New waypoint + " + str(len(waypoints)) + ": " + str(CURRENT_X_1) + " " + str(CURRENT_Y_1) + " " + str(CURRENT_Z_1))
-                f = open('waypoints.csv', 'a')
+                f = open(waypoints_file_name, 'a')
                 f.write(str(CURRENT_X_1) + "," + str(CURRENT_Y_1) + "," + str(CURRENT_Z_1) + "\n")
                 f.close()
 
