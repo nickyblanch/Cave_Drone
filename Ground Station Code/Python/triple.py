@@ -135,7 +135,6 @@ def main():
     setup_GUI()
 
     # Setup
-    # setup()
 
     # Window mainloop
     window.after(0, update_current_coords)
@@ -364,9 +363,9 @@ def setup_GUI():
     drone_1_IP_button = Button(left_frame, image=photo, command=update_drone_1_IP)
     drone_1_IP_button.image = photo
     drone_1_IP_button.grid(row=1, column=2, padx=5, pady=10, sticky='w')
-    drone_1_setup = Button(left_frame, image=setup_photo, command=setup)
-    drone_1_setup.image = setup_photo
-    drone_1_setup.grid(row=1, column=3, pady=10, sticky='w')
+    # drone_1_setup = Button(left_frame, image=setup_photo, command=setup)
+    # drone_1_setup.image = setup_photo
+    # drone_1_setup.grid(row=1, column=3, pady=10, sticky='w')
     drone_2_IP_button = Button(middle_frame, image=photo, command=update_drone_2_IP)
     drone_2_IP_button.image = photo
     drone_2_IP_button.grid(row=1, column=2, padx=5, pady=10, sticky='w')
@@ -708,6 +707,10 @@ def setup():
     # [no inputs or outputs]
     ################################################
 
+    global coordinates_file_name
+    global waypoints_file_name
+
+    # Begin our threads
     global coordinates_file_name
     global waypoints_file_name
 
@@ -1086,7 +1089,7 @@ def telemetry_local_position_thread():
 
         # Write coordinates to a text file
         if new_message:
-            with open(coordinates_file_name, 'w') as f:
+            with open('coordinates.txt', 'a') as f:
                 f.write(f"{CURRENT_X_1},{CURRENT_Y_1},{CURRENT_Z_1},")
                 f.write(f"{CURRENT_X_2},{CURRENT_Y_2},{CURRENT_Z_2}\n")
             new_message = False
