@@ -1,5 +1,4 @@
 ###################################################################################################
-# most recent use this one 12/18/23 
 # Author: Nicolas Blanchard
 #         Contact: nickyblanch@arizona.edu | (520) 834-3191
 #         Purpose: Automatic control for follower drone in cave drone project.
@@ -11,28 +10,28 @@
 #    Dependencies: pymavlink, time, threading, os, tkinter
 # Reproducibility: Tested to work on Windows 11 and Ubunutu 22.xx as of 9/25/2023. Please install
 #                  the pymavlink and tkinter libraries before proceeding.
-
+#
 # Thank you to ardusub.com Intelligent Quads on YouTube for pymavlink references.
-
+#
 # ADDITIONAL COMMENTS
-
+#
 # Important: In order for this pymavlink script to execute on a ground station computer,
 # run QGroundcontrol, and still communicate with the drone, MAVProxy is required to route
 # the MAVLINK messages. Because we only need to monitor the leader on QGroundcontrol,
 # we only require MAXProxy for the leader, and not the follower.
 # The following commands should be used to start MAVProxy:
-
+#
 # mavproxy --master=udp:192.168.1.125:14549 --out 127.0.0.1:14553                       (FOLLOWER / OPTIONAL)
 # mavproxy --master=udp:192.168.1.125:14550 --out 127.0.0.1:14551 --out 127.0.0.1:14552 (LEADER / REQUIRED)
-
+#
 # Then, a ground station (QGroundControl) can connect to UDP port 14551 to monitor the
 # leader drone. The vehicles can be connected to at the following addresses:
 # 127.0.0.1:14553 (FOLLOWER, IF USING MAXPROXY FOR FOLLOWER)
 # 192.168.1.124: (FOLLOWER, IF NOT USING MAVPROXY FOR FOLLOWER)
 # 127.0.0.1:14552 (LEADER, MUST USE MAVPROXY FOR LEADER)
-
+#
 # When calibrating sensors, the closest board orientation is: YAW 90 ROLL 90 PITCH 180
-
+#
 ###################################################################################################
 # TODO
 
@@ -58,6 +57,8 @@ import os
 import tkinter as tk
 from tkinter import ttk
 from tkinter import *
+from datetime import datetime
+# import rospy
 
 
 ###################################################################################################
@@ -108,8 +109,8 @@ drone_1_IP = "0.0.0.0"      # IP address of Drone 1
 drone_2_IP = "0.0.0.0"      # IP address of Drone 2
 drone_3_IP = "0.0.0.0"      # IP address of Drone 3
 drone_1_UDP = 14548         # UDP port of Drone 1
-drone_2_UDP = 14549         # UDP port of Drone 2
-drone_3_UDP = 14550         # UDP port of Drone 3
+drone_2_UDP = 14550         # UDP port of Drone 2
+drone_3_UDP = 14549         # UDP port of Drone 3
 
 window_width = 1125         # Width of GUI window
 window_height = 450         # Length of GUI window
@@ -117,6 +118,9 @@ window_height = 450         # Length of GUI window
 drone1 = 0                  # Drone 1 variable
 drone2 = 0                  # Drone 2 variable
 drone3 = 0                  # Drone 2 variable
+
+coordinates_file_name = ""
+waypoints_file_name = ""
 
 
 ###################################################################################################
@@ -131,6 +135,7 @@ def main():
     setup_GUI()
 
     # Setup
+    # setup()
 
     # Window mainloop
     window.after(0, update_current_coords)
@@ -703,20 +708,21 @@ def setup():
     # [no inputs or outputs]
     ################################################
 
-    # Begin our telemtry thread
-    # t1 = threading.Thread(target=telemetry_loop_thread, args=(drone1,drone2, drone3))
-    # t1.start()
-    # t2 = threading.Thread(target=telemetry_local_position_thread, args=(drone1,drone2, drone3))
-    # t2.start()
-    # t3 = threading.Thread(target=flight_loop_thread, args=())
-    # t3.start()
+    global coordinates_file_name
+    global waypoints_file_name
 
+    # Begin our threads
     t1 = threading.Thread(target=telemetry_loop_thread, args=())
     t1.start()
     t2 = threading.Thread(target=telemetry_local_position_thread, args=())
     t2.start()
     t3 = threading.Thread(target=flight_loop_thread, args=())
     t3.start()
+
+    # Initialize file names
+    curr_time = datetime.now()
+    coordinates_file_name = "./Recorded_Telemetry/" + "coordinates" + str(curr_time.year) + "_" + str(curr_time.month) + "_" + str(curr_time.day) + "_" + str(curr_time.hour) + "_" + str(curr_time.day) + "_" + str(curr_time.hour) + "_" + str(curr_time.minute) + "_" + str(curr_time.second) + ".csv"
+    waypoints_file_name = "./Recorded_Telemetry/" + "waypoints" + str(curr_time.year) + "_" + str(curr_time.month) + "_" + str(curr_time.day) + "_" + str(curr_time.hour) + "_" + str(curr_time.day) + "_" + str(curr_time.hour) + "_" + str(curr_time.minute) + "_" + str(curr_time.second) + ".csv"
 
 
 def establish_connection(number, IP, UDP):
@@ -1057,7 +1063,8 @@ def telemetry_local_position_thread():
                 # print(str(msg.x) + " " + str(msg.y) + " " + str(msg.z))
                 new_message = True
             except:
-                print("Problem receiving LOCAL_POSITION_NED Mav message: 1.")
+                # print("Problem receiving LOCAL_POSITION_NED Mav message: 1.")
+                pass
         if drone2:
             try:
                 msg = drone2.recv_match(type='LOCAL_POSITION_NED', blocking=True)
@@ -1077,14 +1084,11 @@ def telemetry_local_position_thread():
             except:
                 print("Problem receiving LOCAL_POSITION_NED Mav message: 3.")
 
-            # Write coordinates to a text file
+        # Write coordinates to a text file
         if new_message:
-            with open('coordinates.txt', 'a') as f:
+            with open(coordinates_file_name, 'w') as f:
                 f.write(f"{CURRENT_X_1},{CURRENT_Y_1},{CURRENT_Z_1},")
                 f.write(f"{CURRENT_X_2},{CURRENT_Y_2},{CURRENT_Z_2}\n")
-                # f.write(f"Drone 3: ({CURRENT_X_3}, {CURRENT_Y_3}, {CURRENT_Z_3})\n")
-                #print('saving coordinates...')
-                # f.write(str(waypoints) + "\n")
             new_message = False
        
 
@@ -1166,7 +1170,7 @@ def flight_loop_thread():
 
                 # Record new waypoint
                 print("New waypoint + " + str(len(waypoints)) + ": " + str(CURRENT_X_1) + " " + str(CURRENT_Y_1) + " " + str(CURRENT_Z_1))
-                f = open('waypoints.csv', 'a')
+                f = open(waypoints_file_name, 'w')
                 f.write(str(CURRENT_X_1) + "," + str(CURRENT_Y_1) + "," + str(CURRENT_Z_1) + "\n")
                 f.close()
 
