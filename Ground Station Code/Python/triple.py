@@ -1063,6 +1063,7 @@ def telemetry_local_position_thread():
                 CURRENT_X_1 = msg.x
                 CURRENT_Y_1 = msg.y
                 CURRENT_Z_1 = msg.z
+                # CURRENT_VELOCITY_X_1 = msg.vx
                 # print(str(msg.x) + " " + str(msg.y) + " " + str(msg.z))
                 new_message = True
             except:
