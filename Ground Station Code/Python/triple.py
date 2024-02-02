@@ -122,6 +122,10 @@ drone3 = 0                  # Drone 2 variable
 coordinates_file_name = ""
 waypoints_file_name = ""
 
+TARGET_YAW_1 = 0
+TARGET_YAW_2 = 0
+TARGET_YAW_3 = 0
+
 
 ###################################################################################################
 
@@ -943,13 +947,14 @@ def offboard(the_connection):
     #     break
 
 
-def update_target_ned(the_connection, x_val, y_val, z_val):
+def update_target_ned(the_connection, x_val, y_val, z_val, yaw_in):
 
     ################################################
     # the_connection: mavlink connection [input]
     # x_val: float, desired x target [input]
     # y_val: float, desired y target [input]
     # z_val: float, desired z target [input]
+    # yaw_in:   float, desired yaw target [input]
     ################################################
 
     if the_connection:
@@ -965,7 +970,7 @@ def update_target_ned(the_connection, x_val, y_val, z_val):
                     mavutil.mavlink.POSITION_TARGET_TYPEMASK_AZ_IGNORE |
                     # DON'T mavutil.mavlink.POSITION_TARGET_TYPEMASK_FORCE_SET |
                     mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_IGNORE |
-                    mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_RATE_IGNORE), x=float(x_val), y=float(y_val), z=float(z_val), vx=0, vy=0, vz=0, afx=0, afy=0, afz=0, yaw=0, yaw_rate=0)
+                    mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_RATE_IGNORE), x=float(x_val), y=float(y_val), z=float(z_val), vx=0, vy=0, vz=0, afx=0, afy=0, afz=0, yaw=yaw_in, yaw_rate=0)
 
     # if (FLIGHT_MODE != 1):
     #     print("TARGET: [" + str(x_val) + ", " + str(y_val) + ", " + str(z_val) + "]")
@@ -1016,13 +1021,13 @@ def telemetry_loop_thread():
         # print("TARGET: " + str(TARGET_X_1)) #DEBUG
 
         if drone1:
-            update_target_ned(drone1, float(TARGET_X_1), float(TARGET_Y_1), float(TARGET_Z_1))
+            update_target_ned(drone1, float(TARGET_X_1), float(TARGET_Y_1), float(TARGET_Z_1), float(TARGET_YAW_1))
             # print('TARGET: ' + str(TARGET_X_1) + ' ' + str(TARGET_Y_1) + ' ' + str(TARGET_Z_1))
         if drone2:
-            update_target_ned(drone2, float(TARGET_X_2), float(TARGET_Y_2), float(TARGET_Z_2))
+            update_target_ned(drone2, float(TARGET_X_2), float(TARGET_Y_2), float(TARGET_Z_2), float(TARGET_YAW_2))
             # print('TARGET 2: ' + str(TARGET_X_2) + ' ' + str(TARGET_Y_2) + ' ' + str(TARGET_Z_2))
         if drone3:
-            update_target_ned(drone3, float(TARGET_X_3), float(TARGET_Y_3), float(TARGET_Z_3))
+            update_target_ned(drone3, float(TARGET_X_3), float(TARGET_Y_3), float(TARGET_Z_3), float(TARGET_YAW_3))
             # print('TARGET 3: ' + str(TARGET_X_3) + ' ' + str(TARGET_Y_3) + ' ' + str(TARGET_Z_3))
 
     return 0
