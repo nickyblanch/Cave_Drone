@@ -969,7 +969,7 @@ def update_target_ned(the_connection, x_val, y_val, z_val, yaw_in):
                     mavutil.mavlink.POSITION_TARGET_TYPEMASK_AY_IGNORE |
                     mavutil.mavlink.POSITION_TARGET_TYPEMASK_AZ_IGNORE |
                     # DON'T mavutil.mavlink.POSITION_TARGET_TYPEMASK_FORCE_SET |
-                    mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_IGNORE |
+                    # mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_IGNORE |
                     mavutil.mavlink.POSITION_TARGET_TYPEMASK_YAW_RATE_IGNORE), x=float(x_val), y=float(y_val), z=float(z_val), vx=0, vy=0, vz=0, afx=0, afy=0, afz=0, yaw=yaw_in, yaw_rate=0)
 
     # if (FLIGHT_MODE != 1):
