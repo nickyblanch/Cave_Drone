@@ -99,7 +99,9 @@ CURRENT_Z_2 = 0             # current z coordinate
 CURRENT_X_3 = 0             # current x coordinate
 CURRENT_Y_3 = 0             # current y coordinate
 CURRENT_Z_3 = 0             # current z coordinate
-
+CURRENT_VELOCITY_X_1 = 0    # current x velocity drone 1-Amber Added 2/4/2023
+CURRENT_VELOCITY_X_2 = 0    # current x velocity drone 2-Amber Added 2/4/2023
+CURRENT_VELOCITY_X_3 = 0    # current x velocity drone 3-Amber Added 2/4/2023 
 PREV_LEADER_X = 0           # Previous leader waypoint (x)
 PREV_LEADER_Y = 0           # Previous leader waypoint (y)
 PREV_LEADER_Z = 0           # Previous leader waypoint (z)
@@ -1068,7 +1070,7 @@ def telemetry_local_position_thread():
                 CURRENT_X_1 = msg.x
                 CURRENT_Y_1 = msg.y
                 CURRENT_Z_1 = msg.z
-                # CURRENT_VELOCITY_X_1 = msg.vx
+                CURRENT_VELOCITY_X_1 = msg.vx
                 # print(str(msg.x) + " " + str(msg.y) + " " + str(msg.z))
                 new_message = True
             except:
@@ -1080,6 +1082,8 @@ def telemetry_local_position_thread():
                 CURRENT_X_2 = msg.x
                 CURRENT_Y_2 = msg.y
                 CURRENT_Z_2 = msg.z
+                CURRENT_VELOCITY_X_2 = msg.vx
+                # print(str(msg.x) + " " + str(msg.y) + " " + str(msg.z))
                 new_message = True
             except:
                 print("Problem receiving LOCAL_POSITION_NED Mav message: 2.")
@@ -1089,6 +1093,8 @@ def telemetry_local_position_thread():
                 CURRENT_X_3 = msg.x
                 CURRENT_Y_3 = msg.y
                 CURRENT_Z_3 = msg.z
+                CURRENT_VELOCITY_X_3 = msg.vx
+                # print(str(msg.x) + " " + str(msg.y) + " " + str(msg.z))
                 new_message = True
             except:
                 print("Problem receiving LOCAL_POSITION_NED Mav message: 3.")
@@ -1098,8 +1104,11 @@ def telemetry_local_position_thread():
             with open('coordinates.txt', 'w') as f:
                 f.write(f"{CURRENT_X_1},{CURRENT_Y_1},{CURRENT_Z_1},")
                 f.write(f"{CURRENT_X_2},{CURRENT_Y_2},{CURRENT_Z_2}\n")
+                f.write(f"{CURRENT_VELOCITY_X_1},{CURRENT_VELOCITY_X_1},{CURRENT_VELOCITY_X_1},")#velocity drone 1 to file Amber added 2/4
+                f.write(f"{CURRENT_VELOCITY_X_2},{CURRENT_VELOCITY_X_2},{CURRENT_VELOCITY_X_2}\n")#velocity drone 2 to file Amber added 2/4
             new_message = False
-       
+    
+             
 
 def flight_loop_thread():
     ################################################
