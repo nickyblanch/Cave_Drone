@@ -28,6 +28,8 @@
 #include <cstdio>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <sensor_msgs/image_encodings.h>
+#include <vector>
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -254,6 +256,53 @@ class odom_subscribe_and_publish {
 };
 
 
+// SUBSCRIBES TO: /stereo/right
+// PUBLISHES:     /rgb
+class im_subscribe_and_publish {
+    public:
+        im_subscribe_and_publish() {
+
+            // TOPIC WE ARE SUBSCRIBING TO //////////////////////////////////////////////////////////
+            sub = node.subscribe("/stereo/right", 10, &im_subscribe_and_publish::im_callback, this);
+
+            // TOPIC WE ARE PUBLISHING //////////////////////////////////////////////////////////////
+            pub = node.advertise<sensor_msgs::Image>("/rgb", 100);
+
+        }
+        void im_callback(const sensor_msgs::ImageConstPtr& msg) {
+
+            // CREATE 3 CHANNEL IMAGE FROM 1 CHANNEL IMAGE //////////////////////////////////////////
+            sensor_msgs::Image msg_out;
+            msg_out.header = msg->header;
+            msg_out.height = msg->height;
+            msg_out.width = msg->width;
+            msg_out.encoding = sensor_msgs::image_encodings::RGB8;
+            msg_out.is_bigendian = msg->is_bigendian;
+            msg_out.step = msg->step * 3;
+
+            std::vector<unsigned char> new_data;
+            unsigned char temp_val = 0;
+
+            for(unsigned int i = 0; i < 921600; i++) {
+                if (i % 3 == 0) {
+                    temp_val = msg->data[int(i / 3)];
+                }
+                new_data.push_back(temp_val);
+            }
+
+            msg_out.data = new_data;
+            pub.publish(msg_out);
+
+            ROS_INFO_STREAM(" INPUT IMAGE SIZE: " << msg->data.size() << '\n');
+            ROS_INFO_STREAM("OUTPUT IMAGE SIZE: " << new_data.size() << '\n');
+        }
+    private:
+        ros::NodeHandle node;
+        ros::Publisher pub;
+        ros::Subscriber sub;
+};
+
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // MAIN FUNCTION
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -276,6 +325,9 @@ int main(int argc, char** argv) {
 
     // ODOM SUBSCRIBER/PUBLISHER
     odom_subscribe_and_publish odom_obj;
+
+    // IMAGE SUBSCRIBER/PUBLISHER
+    im_subscribe_and_publish im_obj;
 
     // RUN
     ros::spin();
