@@ -1104,8 +1104,8 @@ def telemetry_local_position_thread():
             with open('coordinates.txt', 'w') as f:
                 f.write(f"{CURRENT_X_1},{CURRENT_Y_1},{CURRENT_Z_1},")
                 f.write(f"{CURRENT_X_2},{CURRENT_Y_2},{CURRENT_Z_2}\n")
-                f.write(f"{CURRENT_VELOCITY_X_1},{CURRENT_VELOCITY_X_1},{CURRENT_VELOCITY_X_1},")#velocity drone 1 to file Amber added 2/4
-                f.write(f"{CURRENT_VELOCITY_X_2},{CURRENT_VELOCITY_X_2},{CURRENT_VELOCITY_X_2}\n")#velocity drone 2 to file Amber added 2/4
+                f.write(f"{CURRENT_VELOCITY_X_1}")#velocity drone 1 to file Amber added 2/4
+                f.write(f"{CURRENT_VELOCITY_X_2}\n")#velocity drone 2 to file Amber added 2/4
             new_message = False
     
              
