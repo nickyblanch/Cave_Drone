@@ -1,0 +1,15 @@
+<launch>
+
+	<!-- tof_tf_broadcaster for transforms -->
+	<node pkg="mav_tf" type="tof_tf_broadcaster" args="temp" name="tof_tf_broadcaster"/>
+	
+	<!-- octomap_server for mapping -->
+	<include file="$(find octomap_server)/launch/octomap_mapping.launch"/>
+	
+	<!-- darknet_ros for object detection -->
+	<!-- <include file="$(find darknet_ros)/launch/yolo_v3.launch"/> -->
+	
+	<!-- yolov7_ros for object detection -->
+	<include file="$(find yolov7_ros)/launch/yolov7.launch" />
+	
+</launch>
