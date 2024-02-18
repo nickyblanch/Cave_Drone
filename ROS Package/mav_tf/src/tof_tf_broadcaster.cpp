@@ -26,10 +26,14 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <cstdio>
+#include <vector>
+#include <cmath>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <sensor_msgs/image_encodings.h>
-#include <vector>
+#include <vision_msgs/Detection2DArray.h>
+#include <vision_msgs/Detection2D.h>
+#include <vision_msgs/BoundingBox2D.h>
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -263,10 +267,10 @@ class im_subscribe_and_publish {
         im_subscribe_and_publish() {
 
             // TOPIC WE ARE SUBSCRIBING TO //////////////////////////////////////////////////////////
-            sub = node.subscribe("/stereo/right", 10, &im_subscribe_and_publish::im_callback, this);
+            sub = node.subscribe("/stereo/right", 1, &im_subscribe_and_publish::im_callback, this);
 
             // TOPIC WE ARE PUBLISHING //////////////////////////////////////////////////////////////
-            pub = node.advertise<sensor_msgs::Image>("/rgb", 100);
+            pub = node.advertise<sensor_msgs::Image>("/rgb", 1);
 
         }
         void im_callback(const sensor_msgs::ImageConstPtr& msg) {
@@ -303,6 +307,65 @@ class im_subscribe_and_publish {
 };
 
 
+// SUBSCRIBES TO: /yolov7/yolov7
+// PUBLISHES:     /direction
+class detection_subscribe_and_publish {
+    public:
+        detection_subscribe_and_publish() {
+
+            // TOPIC WE ARE SUBSCRIBING TO //////////////////////////////////////////////////////////
+            sub = node.subscribe("/yolov7/yolov7", 1, &detection_subscribe_and_publish::detection_callback, this);
+
+            // TOPIC WE ARE PUBLISHING //////////////////////////////////////////////////////////////
+            pub = node.advertise<nav_msgs::Odometry>("/direction", 1);
+
+        }
+        void detection_callback(const vision_msgs::Detection2DArrayConstPtr& msg) {
+
+            // RETRIEVING BOUNDING BOX LOCATIONS ////////////////////////////////////////////////////
+            nav_msgs::Odometry msg_out;
+            msg_out.header = msg->header;
+            msg_out.header.frame_id = "base_link";
+            uint16_t x = 0;
+            uint16_t y = 0;
+
+            std::vector<vision_msgs::Detection2D> detec = msg->detections;
+            if (detec.size() > 0) {
+
+                vision_msgs::BoundingBox2D box = detec[0].bbox;
+                x = box.center.x;
+                y = box.center.y;
+
+                ROS_INFO_STREAM("CENTER X: " << x << '\n');
+                ROS_INFO_STREAM("CENTER Y: " << y << '\n');
+            }
+
+            // CREATING TARGET ORIENTATION ///////////////////////////////////////////////////////////
+            // Image size is 640x480
+            const uint16_t center_x = 640 / 2;
+            const uint16_t center_y = 480 / 2;
+            double yaw_angle = atan2(-1.0*(double)(y-center_y), (double)(x-center_x)); // * 180.0 / (2 * 3.15159);
+
+            tf2::Quaternion odom_quat;
+            odom_quat.setRPY(0, 0, yaw_angle);
+            odom_quat.normalize();
+            
+            geometry_msgs::Quaternion final_quat = tf2::toMsg(odom_quat);
+            msg_out.pose.pose.orientation = final_quat;
+            msg_out.pose.pose.position.x = 0;
+            msg_out.pose.pose.position.y = 0;
+            msg_out.pose.pose.position.z = 0;
+
+            pub.publish(msg_out);
+
+        }
+    private:
+        ros::NodeHandle node;
+        ros::Publisher pub;
+        ros::Subscriber sub;
+};
+
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // MAIN FUNCTION
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -328,6 +391,9 @@ int main(int argc, char** argv) {
 
     // IMAGE SUBSCRIBER/PUBLISHER
     im_subscribe_and_publish im_obj;
+
+    // IMAGE SUBSCRIBER/PUBLISHER
+    detection_subscribe_and_publish detec_obj;
 
     // RUN
     ros::spin();
