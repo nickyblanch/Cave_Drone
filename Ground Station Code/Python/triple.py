@@ -1115,10 +1115,10 @@ def telemetry_local_position_thread():
 
         # Write coordinates to a text file
         if new_message:
-            with open('coordinates.txt', 'w') as f:
+            with open(coordinates_file_name, 'a') as f:
                 f.write(f"{CURRENT_X_1},{CURRENT_Y_1},{CURRENT_Z_1},")
-                f.write(f"{CURRENT_X_2},{CURRENT_Y_2},{CURRENT_Z_2}\n")
-                f.write(f"{CURRENT_VELOCITY_X_1},{CURRENT_VELOCITY_Y_1},{CURRENT_VELOCITY_Z_1}")#velocity drone 1 to file Amber added 2/4
+                f.write(f"{CURRENT_X_2},{CURRENT_Y_2},{CURRENT_Z_2},")
+                f.write(f"{CURRENT_VELOCITY_X_1},{CURRENT_VELOCITY_Y_1},{CURRENT_VELOCITY_Z_1},")#velocity drone 1 to file Amber added 2/4
                 f.write(f"{CURRENT_VELOCITY_X_2},{CURRENT_VELOCITY_Y_2},{CURRENT_VELOCITY_Z_2}\n")#velocity drone 2 to file Amber added 2/4
             new_message = False
     
@@ -1202,7 +1202,7 @@ def flight_loop_thread():
 
                 # Record new waypoint
                 print("New waypoint + " + str(len(waypoints)) + ": " + str(CURRENT_X_1) + " " + str(CURRENT_Y_1) + " " + str(CURRENT_Z_1))
-                f = open(waypoints_file_name, 'w')
+                f = open(waypoints_file_name, 'a')
                 f.write(str(CURRENT_X_1) + "," + str(CURRENT_Y_1) + "," + str(CURRENT_Z_1) + "\n")
                 f.close()
 
