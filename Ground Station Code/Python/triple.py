@@ -721,8 +721,8 @@ def setup():
     
     # Initialize file names
     curr_time = datetime.now()
-    coordinates_file_name = "./Recorded_Telemetry/" + "coordinates" + str(curr_time.year) + "_" + str(curr_time.month) + "_" + str(curr_time.day) + "_" + str(curr_time.hour) + "_" + str(curr_time.day) + "_" + str(curr_time.hour) + "_" + str(curr_time.minute) + "_" + str(curr_time.second) + ".csv"
-    waypoints_file_name = "./Recorded_Telemetry/" + "waypoints" + str(curr_time.year) + "_" + str(curr_time.month) + "_" + str(curr_time.day) + "_" + str(curr_time.hour) + "_" + str(curr_time.day) + "_" + str(curr_time.hour) + "_" + str(curr_time.minute) + "_" + str(curr_time.second) + ".csv"
+    coordinates_file_name = "./Recorded_Telemetry/" + "coordinates" + str(curr_time.year) + "_" + str(curr_time.month) + "_" + str(curr_time.day) + "_" + str(curr_time.hour) + "_" + str(curr_time.minute) + "_" + str(curr_time.second) + ".csv"
+    waypoints_file_name = "./Recorded_Telemetry/" + "waypoints" + str(curr_time.year) + "_" + str(curr_time.month) + "_" + str(curr_time.day) + "_" + str(curr_time.hour) +  "_" + str(curr_time.minute) + "_" + str(curr_time.second) + ".csv"
 
     # Begin our threads
     t1 = threading.Thread(target=telemetry_loop_thread, args=())
