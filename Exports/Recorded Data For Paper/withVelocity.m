@@ -1,6 +1,6 @@
 clear; clc; close all;
-data = readmatrix("coordinates2024_2_19_12_19_12_50_45.csv");
-waypoints = readmatrix("waypoints2024_2_19_12_19_12_50_45.csv");
+data = readmatrix("../../Recorded_Telemetry/coordinates2024_3_12_15_12_15_29_40.csv");
+waypoints = readmatrix("../../Recorded_Telemetry/waypoints2024_3_12_15_12_15_29_40.csv");
 
 % Extract data for each drone
 drone1_data = data(:, 1:3); % Data for drone 1 (x, y, z)
@@ -41,3 +41,21 @@ xlim([-1 4]);
 ylim([-3 1]);
 zlim([-1 2]);
 grid on
+
+% figure;
+% hold on;
+% plot(data(:, 7));
+% plot(data(:, 8));
+% plot(data(:, 9));
+% legend('X Velocity (m/s)', 'Y Velocity (m/s)', 'Z Velocity (m/s)');
+% hold off;
+
+figure;
+plot(data(:, 7));
+title("X");
+figure;
+plot(data(:, 8));
+title("Y");
+figure;
+plot(data(:, 9));
+title("Z");
