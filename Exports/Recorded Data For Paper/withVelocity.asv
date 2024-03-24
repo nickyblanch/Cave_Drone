@@ -4,7 +4,7 @@
 clear; clc; close all;
 
 % Flags
-mode = 0;    % 0 FOR LIGHT, 1 FOR DARK
+mode = 0    % 0 FOR LIGHT, 1 FOR DARK
 
 %% Load Data
 
@@ -24,8 +24,8 @@ drone2_vel = data(:, 10:12); % Data for drone 2 (vx, vy, vz)
 %%  Plot the pos data
 figure;
 hold on;
-plot3(drone1_pos(:, 1), drone1_pos(:, 2), drone1_pos(:, 3), 'LineWidth', 1, 'Color', 'Blue');    % Drone 1
-plot3(drone2_pos(:, 1), drone2_pos(:, 2), drone2_pos(:, 3), 'LineWidth', 1, 'Color', 'Red');     % Drone 2
+plot3(drone1_data(:, 1), drone1_data(:, 2), drone1_data(:, 3), 'LineWidth', 1, 'Color', 'Blue');    % Drone 1
+plot3(drone2_data(:, 1), drone2_data(:, 2), drone2_data(:, 3), 'LineWidth', 1, 'Color', 'Red');     % Drone 2
 plot3(waypoints(:, 1), waypoints(:, 2), waypoints(:, 3), '.black', 'MarkerSize', 10);               % Waypoints
 if mode
     title('Recorded Flight Path of Vehicle Train, Fully Dark Conditions', 'Color', 'Black', 'FontSize', 15)
