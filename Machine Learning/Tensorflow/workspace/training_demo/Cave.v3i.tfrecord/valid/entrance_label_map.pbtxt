@@ -1,0 +1,10 @@
+item {
+    name: "-",
+    id: 1,
+    display_name: "-"
+}
+item {
+    name: "entrance",
+    id: 2,
+    display_name: "entrance"
+}
